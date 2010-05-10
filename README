@@ -2,9 +2,4 @@ fileboxes - a new way of managing files
 
 how to install:
 
-cd <project_name_path>
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX='kde4-config --prefix' ..
-make
-sudo make install
+sh install.sh
