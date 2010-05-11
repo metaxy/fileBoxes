@@ -1,9 +1,9 @@
 set(app_fileboxes_SRCS
    mainwindow.cpp
    main.cpp
-   ../../gui/fileboxeswidget.cpp
-   ../../gui/fileboxicon.cpp
-   ../../gui/fileboxwidget.cpp
+   fileboxeswidget.cpp
+   fileboxicon.cpp
+   fileboxwidget.cpp
  )
 
 kde4_add_executable(app_fileboxes ${app_fileboxes_SRCS})

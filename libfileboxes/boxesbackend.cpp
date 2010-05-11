@@ -30,13 +30,14 @@
 #include <Nepomuk/Tag>
 #include <nepomuk/comparisonterm.h>
 #include <nepomuk/literalterm.h>
-#include "/home/kde-devel/kde/include/Soprano/Vocabulary/NAO"
+#include "nao.h"
 #include "nie.h"
 using namespace Nepomuk;
 BoxesBackend::BoxesBackend()
 {
     m_fileBoxesHome = QDir::homePath() + "/.fileboxes";
     m_settings = new QSettings(m_fileBoxesHome + "/files.ini", QSettings::IniFormat);
+    Nepomuk::ResourceManager::instance()->init();
 }
 BoxesBackend::~BoxesBackend()
 {
@@ -44,26 +45,27 @@ BoxesBackend::~BoxesBackend()
 }
 bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
 {
-  qDebug() << " newFile boxID = " << boxID << " fileName = " << fileName;
+    qDebug() << " newFile boxID = " << boxID << " fileName = " << fileName;
+   
     QUrl boxUrl("fileboxes:/"+boxID);
-        
+    /* Nepomuk Test */
+    //_________________________________________________________________________________________-        
     Resource f( fileName );
- 
-    
+
     QList<Resource> parts = f.property( Nepomuk::Vocabulary::NIE::hasPart() ).toResourceList();
     QListIterator<Resource> it_parts( parts );
     while( it_parts.hasNext() )
-        qDebug() << "File tagged with part: " << it_parts.next().genericLabel();
+        qDebug() << "File hasPart : " << it_parts.next().genericLabel();
     
-       Resource boxRes( boxUrl );
-    f.addProperty( Nepomuk::Vocabulary::NIE::isPartOf(), "fileboxes:/"+boxID );
+    Resource boxRes( boxUrl );
+    boxRes.setLabel(name(boxID));
+    f.addProperty( Nepomuk::Vocabulary::NIE::isPartOf(), boxRes );
     
-QList<Resource> tags = f.property( Soprano::Vocabulary::NAO::hasTag() ).toResourceList();
-QListIterator<Resource> it( tags );
-while( it.hasNext() )
-  qDebug() << "File tagged with tag 2: "
-            << it.next().genericLabel();
-        
+    QList<Resource> tags = f.property( Soprano::Vocabulary::NAO::hasTag() ).toResourceList();
+    QListIterator<Resource> it( tags );
+    while( it.hasNext() )
+        qDebug() << "File tagged with tag 2: " << it.next().genericLabel();
+    //_________________________________________________________________________________________-    
     QCryptographicHash hash(QCryptographicHash::Md5);
     hash.addData(fileName.toLocal8Bit());
     QString filePath = m_fileBoxesHome + "/" + boxID + "/" + hash.result().toHex();
@@ -88,7 +90,7 @@ while( it.hasNext() )
 }
 bool BoxesBackend::removeFile(const QString &boxID, const QString &fileName, const bool &isFile)
 {
-    QDir dir("/");
+    QDir dir;
     bool error = false;
     if (isFile) {
         error = dir.remove(fileName);

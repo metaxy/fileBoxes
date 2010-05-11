@@ -70,7 +70,7 @@ void FileBoxesWidget::newBox(const QString &boxID, const QString &name, const QS
 }
 void FileBoxesWidget::removeBox(const QString &boxID)
 {
-    delete this->findChild<QWidget*>("boxWidget_" + boxID)
+    delete this->findChild<QWidget*>("boxWidget_" + boxID);
 }
 void FileBoxesWidget::newBoxDialog()
 {

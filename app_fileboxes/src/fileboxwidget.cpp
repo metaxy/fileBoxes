@@ -51,7 +51,7 @@ FileBoxWidget::FileBoxWidget(QWidget *parent, const QString &boxID, const QStrin
     setFileBoxID(boxID);
     setFileBoxIcon(icon);
     setFileBoxName(name);
-    connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenu(QPoint)));
+
 }
 
 FileBoxWidget::~FileBoxWidget()
@@ -71,6 +71,7 @@ void FileBoxWidget::setFileBoxIcon(const QString &icon)
 void FileBoxWidget::setFileBoxName(const QString &name)
 {
     this->m_name = name;
+
 }
 
 void FileBoxWidget::contextMenu(const QPoint & pos)

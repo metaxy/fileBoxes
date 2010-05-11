@@ -24,6 +24,7 @@ set( fileboxes_LIB_HDRS
 
 soprano_add_ontology(fileboxes_LIB_SRCS ${SHAREDDESKTOPONTOLOGIES_ROOT_DIR}/nie/nfo.trig "NFO" "Nepomuk::Vocabulary" "trig")
 soprano_add_ontology(fileboxes_LIB_SRCS ${SHAREDDESKTOPONTOLOGIES_ROOT_DIR}/nie/nie.trig "NIE" "Nepomuk::Vocabulary" "trig")
+soprano_add_ontology(fileboxes_LIB_SRCS ${SHAREDDESKTOPONTOLOGIES_ROOT_DIR}/nepomuk/nao.trig "NAO" "Soprano::Vocabulary" "trig")
 set(GENERIC_LIB_VERSION "0.1")
 set(GENERIC_LIB_SOVERSION "0")
 kde4_add_library( fileboxes SHARED ${fileboxes_LIB_SRCS} )
