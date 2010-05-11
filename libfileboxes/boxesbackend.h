@@ -23,6 +23,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QSettings>
 #include <QtCore/QUrl>
+#include "Nepomuk/Resource"
 #include "boxsettings.h"
 #include "fileboxes_export.h"
 class FILEBOXES_EXPORT BoxesBackend
@@ -36,7 +37,7 @@ public:
     bool removeBox(const QString &boxID);
     bool removeFiles(const QStringList &fileNames, const QString &boxID);
     bool removeAllFiles(const QString &boxID);
-    bool removeFile(const QString &boxID, const QString &fileName, const bool &isFile);
+    bool removeFile(const QString& fileName, const QString& boxID);
 
     QStringList boxIDs();
     QStringList boxNames();
@@ -59,6 +60,7 @@ private:
     QSettings *m_settings;
     QString m_fileBoxesHome;
     void rm(const QString &path);
+    Nepomuk::Resource boxRes(const QString& boxID);
 };
 
 #endif

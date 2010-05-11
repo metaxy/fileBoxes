@@ -24,7 +24,6 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QDir>
 #include <QtCore/QtDebug>
-#include "Nepomuk/Resource"
 #include <Nepomuk/ResourceManager>
 #include <Nepomuk/Variant>
 #include <Nepomuk/Tag>
@@ -34,6 +33,7 @@
 #include <nepomuk/literalterm.h>
 #include "nao.h"
 #include "nie.h"
+#include "nfo.h"
 #include <Soprano/Model>
 #include <Soprano/QueryResultIterator>
 #include <Soprano/Vocabulary/NAO>
@@ -45,7 +45,7 @@ BoxesBackend::BoxesBackend()
     m_fileBoxesHome = QDir::homePath() + "/.fileboxes";
     m_settings = new QSettings(m_fileBoxesHome + "/files.ini", QSettings::IniFormat);
     Nepomuk::ResourceManager::instance()->init();
-    qDebug() << "Version 0.1.1";
+    qDebug() << "Version 0.1.3";
 }
 BoxesBackend::~BoxesBackend()
 {
@@ -55,7 +55,6 @@ bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
 {
     qDebug() << " newFile boxID = " << boxID << " fileName = " << fileName;
    
-    QUrl boxUrl("fileboxes:/"+boxID);
     /* Nepomuk Test */
     //_________________________________________________________________________________________-        
     Resource f( fileName );
@@ -64,10 +63,8 @@ bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
     QListIterator<Resource> it_parts( parts );
     while( it_parts.hasNext() )
         qDebug() << "File hasPart : " << it_parts.next().genericLabel();
-    
-    Resource boxRes( boxUrl );
     //boxRes.setLabel(name(boxID));
-    f.addProperty( Nepomuk::Vocabulary::NIE::isPartOf(), boxRes );
+    f.addProperty( Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID) );
     
     QList<Resource> tags = f.property( Soprano::Vocabulary::NAO::hasTag() ).toResourceList();
     QListIterator<Resource> it( tags );
@@ -94,19 +91,16 @@ bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
         QTextStream out(&file);
         out << "\n";
     }
+    files(boxID);
     return true;
 }
-bool BoxesBackend::removeFile(const QString &boxID, const QString &fileName, const bool &isFile)
+bool BoxesBackend::removeFile(const QString &fileName,const QString &boxID)
 {
-    QUrl boxUrl("fileboxes:/"+boxID);
-    Resource boxRes( boxUrl );
-    boxRes.setLabel(name(boxID));
-    
     Resource f( fileName );
-    f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes);
+    f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
     //_______________________________________________________________
       
-    QDir dir;
+   /* QDir dir;
     bool error = false;
     if (isFile) {
         error = dir.remove(fileName);
@@ -116,8 +110,64 @@ bool BoxesBackend::removeFile(const QString &boxID, const QString &fileName, con
 
     BoxSettings set = settings(boxID);
     set.places[fileName].clear();
+    setSettings(boxID, set);*/
+    return true;
+}
+bool BoxesBackend::removeFiles(const QStringList &files, const QString &boxID)
+{
+    QDir d(m_fileBoxesHome + "/" + boxID + "/");
+    for (int i = 0; i < files.size(); ++i) {
+        removeFile(files.at(i),boxID);
+    }
+    return true;
+    //todo:remove in places
+}
+bool BoxesBackend::removeAllFiles(const QString &boxID)
+{
+    Nepomuk::Query::ResourceTerm partTerm( boxRes(boxID) );
+    Nepomuk::Query::ComparisonTerm term( Nepomuk::Vocabulary::NIE::isPartOf(), 
+                                     partTerm, 
+                                     Nepomuk::Query::ComparisonTerm::Equal);
+    Nepomuk::Query::Query query( term );
+    QString q = query.toSparqlQuery();
+    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery( q, Soprano::Query::QueryLanguageSparql );
+    while( it.next() ) {
+        Resource f( it.binding(0).uri());
+        f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
+    }
+    //_________________________________________________________________
+    //clear places
+    BoxSettings set = settings(boxID);
+    set.places.clear();
     setSettings(boxID, set);
-    return error;
+    //remove dir
+    rm(m_fileBoxesHome + "/" + boxID+"/");
+    //make dir
+    QDir dir;
+    return dir.mkpath(m_fileBoxesHome + "/" + boxID);
+}
+QList<QUrl> BoxesBackend::files(const QString &boxID)
+{
+    qDebug() << "files";
+    Nepomuk::Query::ResourceTerm partTerm( boxRes(boxID) );
+    Nepomuk::Query::ComparisonTerm term( Nepomuk::Vocabulary::NIE::isPartOf(), 
+                                     partTerm, 
+                                     Nepomuk::Query::ComparisonTerm::Equal);
+    Nepomuk::Query::Query query( term );
+    QString q = query.toSparqlQuery();
+    qDebug() << q;
+    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery( q, Soprano::Query::QueryLanguageSparql );
+    while( it.next() ) {
+        Resource f( it.binding(0).uri());
+        qDebug() << it.binding(0).uri() << f.property(Nepomuk::Vocabulary::NIE::url());
+    }
+    //________________________________________________________________________
+    QList<QVariant> list = places(boxID).values();
+    QList<QUrl> urls;
+    for (int i = 0; i < list.size(); ++i) {
+        urls << QUrl::fromLocalFile(list.at(i).toString());
+    }
+    return urls;
 }
 QString BoxesBackend::newBox(const QString &name, const QString &icon)
 {
@@ -155,15 +205,8 @@ QStringList BoxesBackend::boxNames()
     }
     return ret;
 }
-QList<QUrl> BoxesBackend::files(const QString &boxID)
-{
-    QList<QVariant> list = places(boxID).values();
-    QList<QUrl> urls;
-    for (int i = 0; i < list.size(); ++i) {
-        urls << QUrl::fromLocalFile(list.at(i).toString());
-    }
-    return urls;
-}
+
+
 QString BoxesBackend::name(const QString &boxID)
 {
     return settings(boxID).name;
@@ -212,58 +255,15 @@ unsigned int BoxesBackend::boxSize(const QString &boxID)
 {
     return settings(boxID).places.size();
 }
-bool BoxesBackend::removeFiles(const QStringList &files, const QString &boxID)
-{
-    QDir d(m_fileBoxesHome + "/" + boxID + "/");
-    for (int i = 0; i < files.size(); ++i) {
-        d.remove(files.at(i));
-    }
-    return true;
-    //todo:remove in places
-}
-bool BoxesBackend::removeAllFiles(const QString &boxID)
-{
-    QUrl boxUrl("fileboxes:/"+boxID);
-    Resource boxRes( boxUrl );
-    //boxRes.setLabel(name(boxID));
-    Nepomuk::Query::ResourceTerm partTerm( boxRes );
-    Nepomuk::Query::ComparisonTerm term( Nepomuk::Vocabulary::NIE::isPartOf(), 
-                                     partTerm, 
-                                     Nepomuk::Query::ComparisonTerm::Equal);
- 
-// build the query
-    Nepomuk::Query::Query query( term );
-    QString q = query.toSparqlQuery();
-  
-    qDebug() << q;
-    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery( q, Soprano::Query::QueryLanguageSparql );
-    while( it.next() ) {
-	qDebug() << it.binding("r").toString() << it.binding("resource") << it.binding(0);
-	Resource f( it.binding(0).uri());
-	qDebug() << f.uri();
-	QList<Soprano::BindingSet> l  = it.allBindings();
-	for(int i = 0; i < l.size(); i++) {
-	    QStringList l2 = l.at(i).bindingNames();
-	    //qDebug() << l2;
-	}
-    }
-    //_________________________________________________________________
-    //clear places
-    BoxSettings set = settings(boxID);
-    set.places.clear();
-    setSettings(boxID, set);
-    //remove dir
-    rm(m_fileBoxesHome + "/" + boxID+"/");
-    //make dir
-    QDir dir;
-    return dir.mkpath(m_fileBoxesHome + "/" + boxID);
-}
+
 QString BoxesBackend::fileBoxesHome()
 {
     return m_fileBoxesHome;
 }
 bool BoxesBackend::removeBox(const QString &boxID)
 {
+    removeAllFiles(boxID);
+    //_____________________________________________________
     m_settings->remove(boxID);//remove from settings
     //remove dir
     QDir dir(m_fileBoxesHome + "/");
@@ -273,9 +273,16 @@ void BoxesBackend::sync()
 {
     m_settings->sync();
 }
+
+Nepomuk::Resource BoxesBackend::boxRes(const QString &boxID)
+{
+    QUrl boxUrl("fileboxes:/"+boxID);
+    Resource res( boxUrl );
+    return res;
+}
+
 void BoxesBackend::rm(const QString &path)
 {
-    qDebug() << "path  = " << path;
     QFileInfo fileInfo(path);
     if(fileInfo.isDir()){
         QDir dir(path);

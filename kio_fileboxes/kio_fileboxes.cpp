@@ -174,7 +174,7 @@ void FileBoxesProtocol::del( const KUrl &url, bool isfile )
     QString path = url.path();
     QStringList list = path.split("/");
     QString boxID = list.at(list.size()-1);
-    if(m_backend->removeFile(boxID,path,isfile)) {
+    if(m_backend->removeFile(boxID,path)) {
         finished();
     }
     return;
