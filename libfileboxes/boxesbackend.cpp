@@ -28,16 +28,24 @@
 #include <Nepomuk/ResourceManager>
 #include <Nepomuk/Variant>
 #include <Nepomuk/Tag>
+#include <nepomuk/query.h>
+#include <nepomuk/resourceterm.h>
 #include <nepomuk/comparisonterm.h>
 #include <nepomuk/literalterm.h>
 #include "nao.h"
 #include "nie.h"
+#include <Soprano/Model>
+#include <Soprano/QueryResultIterator>
+#include <Soprano/Vocabulary/NAO>
+#include <Soprano/Client/DBusClient>
+#include <Soprano/Client/DBusModel>
 using namespace Nepomuk;
 BoxesBackend::BoxesBackend()
 {
     m_fileBoxesHome = QDir::homePath() + "/.fileboxes";
     m_settings = new QSettings(m_fileBoxesHome + "/files.ini", QSettings::IniFormat);
     Nepomuk::ResourceManager::instance()->init();
+    qDebug() << "Version 0.1.1";
 }
 BoxesBackend::~BoxesBackend()
 {
@@ -52,13 +60,13 @@ bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
     //_________________________________________________________________________________________-        
     Resource f( fileName );
 
-    QList<Resource> parts = f.property( Nepomuk::Vocabulary::NIE::hasPart() ).toResourceList();
+    QList<Resource> parts = f.property( Nepomuk::Vocabulary::NIE::isPartOf() ).toResourceList();
     QListIterator<Resource> it_parts( parts );
     while( it_parts.hasNext() )
         qDebug() << "File hasPart : " << it_parts.next().genericLabel();
     
     Resource boxRes( boxUrl );
-    boxRes.setLabel(name(boxID));
+    //boxRes.setLabel(name(boxID));
     f.addProperty( Nepomuk::Vocabulary::NIE::isPartOf(), boxRes );
     
     QList<Resource> tags = f.property( Soprano::Vocabulary::NAO::hasTag() ).toResourceList();
@@ -90,6 +98,14 @@ bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
 }
 bool BoxesBackend::removeFile(const QString &boxID, const QString &fileName, const bool &isFile)
 {
+    QUrl boxUrl("fileboxes:/"+boxID);
+    Resource boxRes( boxUrl );
+    boxRes.setLabel(name(boxID));
+    
+    Resource f( fileName );
+    f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes);
+    //_______________________________________________________________
+      
     QDir dir;
     bool error = false;
     if (isFile) {
@@ -207,6 +223,31 @@ bool BoxesBackend::removeFiles(const QStringList &files, const QString &boxID)
 }
 bool BoxesBackend::removeAllFiles(const QString &boxID)
 {
+    QUrl boxUrl("fileboxes:/"+boxID);
+    Resource boxRes( boxUrl );
+    //boxRes.setLabel(name(boxID));
+    Nepomuk::Query::ResourceTerm partTerm( boxRes );
+    Nepomuk::Query::ComparisonTerm term( Nepomuk::Vocabulary::NIE::isPartOf(), 
+                                     partTerm, 
+                                     Nepomuk::Query::ComparisonTerm::Equal);
+ 
+// build the query
+    Nepomuk::Query::Query query( term );
+    QString q = query.toSparqlQuery();
+  
+    qDebug() << q;
+    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery( q, Soprano::Query::QueryLanguageSparql );
+    while( it.next() ) {
+	qDebug() << it.binding("r").toString() << it.binding("resource") << it.binding(0);
+	Resource f( it.binding(0).uri());
+	qDebug() << f.uri();
+	QList<Soprano::BindingSet> l  = it.allBindings();
+	for(int i = 0; i < l.size(); i++) {
+	    QStringList l2 = l.at(i).bindingNames();
+	    //qDebug() << l2;
+	}
+    }
+    //_________________________________________________________________
     //clear places
     BoxSettings set = settings(boxID);
     set.places.clear();

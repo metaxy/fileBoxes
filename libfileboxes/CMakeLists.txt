@@ -30,7 +30,7 @@ set(GENERIC_LIB_SOVERSION "0")
 kde4_add_library( fileboxes SHARED ${fileboxes_LIB_SRCS} )
  
 target_link_libraries( fileboxes
-  ${KDE4_KDECORE_LIBS} ${KDE4_KDEUI_LIBS} ${NEPOMUK_LIBRARIES}  ${SOPRANO_CLIENT_LIBRARIES}
+  ${KDE4_KDECORE_LIBS} ${KDE4_KDEUI_LIBS} ${NEPOMUK_LIBRARIES}  ${SOPRANO_CLIENT_LIBRARIES} ${NEPOMUK_QUERY_LIBRARIES}
   ${SOPRANO_LIBRARIES}
 )
 set_target_properties( fileboxes
