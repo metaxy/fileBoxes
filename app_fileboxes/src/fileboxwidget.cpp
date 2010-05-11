@@ -117,7 +117,7 @@ void FileBoxWidget::openBox()
 {
     QProcess *myProcess = new QProcess();
     //myProcess->start("kioclient",QStringList() << "exec" << "fileboxes:/"+m_box->name());
-    myProcess->start("kioclient", QStringList() << "exec" << "fileboxes:/" + m_box->boxID());
+    myProcess->start("kioclient", QStringList() << "exec" << "fileboxes:/" + m_box->boxID()+"/");
     m_box->setHasNew(false);
     m_boxIcon->updateIcon();
 

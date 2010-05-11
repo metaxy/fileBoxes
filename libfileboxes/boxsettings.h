@@ -27,6 +27,5 @@ struct BoxSettings {
     QString name;
     QString icon;
     bool hasNew;
-    QMap<QString, QVariant> places;
 };
 #endif

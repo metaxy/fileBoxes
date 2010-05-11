@@ -71,27 +71,7 @@ bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
     while( it.hasNext() )
         qDebug() << "File tagged with tag 2: " << it.next().genericLabel();
     //_________________________________________________________________________________________-    
-    QCryptographicHash hash(QCryptographicHash::Md5);
-    hash.addData(fileName.toLocal8Bit());
-    QString filePath = m_fileBoxesHome + "/" + boxID + "/" + hash.result().toHex();
 
-    BoxSettings set = settings(boxID);
-    set.places[filePath] = QVariant(fileName);
-    setSettings(boxID, set);
-
-    QFileInfo info(fileName);
-    if (info.isDir()) {
-        QDir dir;
-        dir.mkpath(filePath);
-    } else {
-        QFile file(filePath);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            return false;
-        }
-        QTextStream out(&file);
-        out << "\n";
-    }
-    files(boxID);
     return true;
 }
 bool BoxesBackend::removeFile(const QString &fileName,const QString &boxID)
@@ -135,16 +115,7 @@ bool BoxesBackend::removeAllFiles(const QString &boxID)
         Resource f( it.binding(0).uri());
         f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
     }
-    //_________________________________________________________________
-    //clear places
-    BoxSettings set = settings(boxID);
-    set.places.clear();
-    setSettings(boxID, set);
-    //remove dir
-    rm(m_fileBoxesHome + "/" + boxID+"/");
-    //make dir
-    QDir dir;
-    return dir.mkpath(m_fileBoxesHome + "/" + boxID);
+   
 }
 QList<QUrl> BoxesBackend::files(const QString &boxID)
 {
@@ -157,15 +128,10 @@ QList<QUrl> BoxesBackend::files(const QString &boxID)
     QString q = query.toSparqlQuery();
     qDebug() << q;
     Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery( q, Soprano::Query::QueryLanguageSparql );
+    QList<QUrl> urls;
     while( it.next() ) {
         Resource f( it.binding(0).uri());
-        qDebug() << it.binding(0).uri() << f.property(Nepomuk::Vocabulary::NIE::url());
-    }
-    //________________________________________________________________________
-    QList<QVariant> list = places(boxID).values();
-    QList<QUrl> urls;
-    for (int i = 0; i < list.size(); ++i) {
-        urls << QUrl::fromLocalFile(list.at(i).toString());
+        urls << it.binding(0).uri();
     }
     return urls;
 }
@@ -187,10 +153,7 @@ QString BoxesBackend::newBox(const QString &name, const QString &icon)
     set.hasNew = false;
     setSettings(boxID, set);
 
-    QDir a;
-    a.mkpath(m_fileBoxesHome + "/" + boxID + "/");
-
-    return QString(boxID);
+    return boxID;
 }
 QStringList BoxesBackend::boxIDs()
 {
@@ -215,10 +178,6 @@ QString BoxesBackend::icon(const QString &boxID)
 {
     return settings(boxID).icon;
 }
-QMap<QString, QVariant> BoxesBackend::places(const QString &boxID)
-{
-    return settings(boxID).places;
-}
 bool BoxesBackend::hasNew(const QString &boxID)
 {
     return settings(boxID).hasNew;
@@ -236,7 +195,6 @@ struct BoxSettings BoxesBackend::settings(const QString &boxID) {
     set.name = m_settings->value("name").toString();
     set.icon = m_settings->value("icon").toString();
     set.hasNew = m_settings->value("hasNew").toBool();
-    set.places = m_settings->value("places").toMap();
     m_settings->endGroup();
     return set;
 }
@@ -246,14 +204,13 @@ bool BoxesBackend::setSettings(const QString &boxID, const struct BoxSettings &s
     m_settings->setValue("name", set.name);
     m_settings->setValue("icon", set.icon);
     m_settings->setValue("hasNew", set.hasNew);
-    m_settings->setValue("places", set.places);
     m_settings->endGroup();
     //sync();
     return false;
 }
 unsigned int BoxesBackend::boxSize(const QString &boxID)
 {
-    return settings(boxID).places.size();
+    return files(boxID).size();
 }
 
 QString BoxesBackend::fileBoxesHome()
@@ -263,11 +220,7 @@ QString BoxesBackend::fileBoxesHome()
 bool BoxesBackend::removeBox(const QString &boxID)
 {
     removeAllFiles(boxID);
-    //_____________________________________________________
-    m_settings->remove(boxID);//remove from settings
-    //remove dir
-    QDir dir(m_fileBoxesHome + "/");
-    return dir.rmpath(m_fileBoxesHome + "/" + boxID);
+    m_settings->remove(boxID);
 }
 void BoxesBackend::sync()
 {
@@ -280,18 +233,8 @@ Nepomuk::Resource BoxesBackend::boxRes(const QString &boxID)
     Resource res( boxUrl );
     return res;
 }
-
-void BoxesBackend::rm(const QString &path)
+QString BoxesBackend::localPath(QUrl url)
 {
-    QFileInfo fileInfo(path);
-    if(fileInfo.isDir()){
-        QDir dir(path);
-        QStringList fileList = dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot);
-        for(int i = 0; i < fileList.count(); ++i) {
-            rm(path+fileList.at(i));
-        }
-        dir.rmdir(path);
-    } else {
-        QFile::remove(path);
-    }
+     Resource f( url );
+     return f.property(Nepomuk::Vocabulary::NIE::url()).toUrl().toLocalFile();
 }

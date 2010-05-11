@@ -51,15 +51,15 @@ public:
     QString icon(const QString &boxID);
     bool hasNew(const QString &boxID);
     void setHasNew(const bool &hasNew, const QString &boxID);
-    QMap<QString, QVariant> places(const QString &boxID);
+    
     unsigned int boxSize(const QString &boxID);
     QString fileBoxesHome();
+    QString localPath(QUrl url);
 
     void sync();
 private:
     QSettings *m_settings;
     QString m_fileBoxesHome;
-    void rm(const QString &path);
     Nepomuk::Resource boxRes(const QString& boxID);
 };
 

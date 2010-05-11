@@ -24,25 +24,28 @@
 #include <kcmdlineargs.h>
 #include <kstandarddirs.h>
 #include <kcomponentdata.h>
-#include <klocale.h>
 #include <kfileplacesmodel.h>
 #include <KApplication>
 #include <KCmdLineArgs>
 #include <KConfigGroup>
-#include <KStandardDirs>
 #include <KFileItem>
 #include <kio/udsentry.h>
-#include <QFile>
-#include <QDBusInterface>
-#include <QDesktopServices>
 #include <QDir>
+#include <QUrl>
 #include <QStringList>
-#include <QMap>
 #include <QVariant>
-//#include <QSettings>
-#include <QFileInfo>
+#include <KUrl>
+#include <kio/global.h>
+#include <klocale.h>
+#include <kio/job.h>
+#include <KUser>
 #include <KDebug>
-#include <QMapIterator>
+#include <KLocale>
+
+
+
+
+#include <QCoreApplication>
 FileBoxesProtocol::FileBoxesProtocol(const QByteArray& protocol, const QByteArray &pool, const QByteArray &app)
         : KIO::ForwardingSlaveBase(protocol, pool, app)
 {
@@ -53,131 +56,112 @@ FileBoxesProtocol::FileBoxesProtocol(const QByteArray& protocol, const QByteArra
 FileBoxesProtocol::~FileBoxesProtocol()
 {
 }
-bool FileBoxesProtocol::rewriteUrl(const KUrl &url, KUrl &newUrl)
+int FileBoxesProtocol::parseUrl( const KUrl& url )
 {
-    m_backend->sync();
-    QString path = url.path();
-    QStringList list_url = path.split("/");//bsp /home/paul/.fileboxes/1/
-    QStringList list_home = m_fileBoxesHome.split("/");//bsp /home/paul/.fileboxes/
-    if (list_url.size() > list_home.size()) {
-        newUrl.setProtocol("file");
-        QString boxID = list_url.at(list_home.size());
-        QMap<QString,QVariant> places = m_backend->places(boxID);
-        newUrl.setPath(places[path].toString());
+    kDebug() << url;
+    const QString path = url.path(KUrl::RemoveTrailingSlash);
+    if( path.isEmpty() || path == QLatin1String("/") ) {
+        return 0;
     }
     else {
-        newUrl.setProtocol("file");
-        newUrl.setPath(m_fileBoxesHome);
-        QStringList groups = m_backend->boxIDs();
-        for (int i=0;i<groups.size();++i) {
-            //if(backend->name(groups.at(i)) == list_url.at(1))//todo:change to id
-            if (groups.at(i) == list_url.at(1)) {
-                path = groups.at(i);
-                break;
-            }
-        }
-        newUrl.addPath(path);
+        return 1;
     }
-    return true;
 }
-
-void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry &entry, bool listing) const
+KIO::UDSEntry FileBoxesProtocol::createBox( const QString& boxID )
 {
-    m_backend->sync();
-    bool isVirtual = false;
-    ForwardingSlaveBase::prepareUDSEntry(entry, listing);
-    const QString path = entry.stringValue(KIO::UDSEntry::UDS_NAME);
-    QFile f(path);
-    QString name = f.fileName();
-    if (name == "." || name == ".." || name == "files.ini") {//dont show them
-        entry.insert(KIO::UDSEntry::UDS_HIDDEN, 1);
-        return;
-    }
-    QString localPath = entry.stringValue(KIO::UDSEntry::UDS_LOCAL_PATH);
-    if (localPath.endsWith("/")) {
-        localPath = localPath.remove(localPath.size()-1,2);
-    }
-    QStringList listPath = localPath.split("/");
-    QStringList listHome = m_fileBoxesHome.split("/");
-    if (/*listPath.size() > listHome.size()*/ true) {
-        QString fileBoxID = listPath.at(listHome.size());
-        QStringList groups(m_backend->boxIDs());
-        if (groups.contains(fileBoxID) && (listPath.size()-1) == listHome.size() && entry.isDir()) {
-            isVirtual = false;
-            name = m_backend->name(fileBoxID);
-            localPath = "fileboxes:/"+fileBoxID;
-            entry.insert(KIO::UDSEntry::UDS_ICON_NAME, m_backend->icon(fileBoxID));
-            entry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, name);
-            entry.insert(KIO::UDSEntry::UDS_SIZE , i18n("%1 items",QString::number(m_backend->boxSize(fileBoxID))));
-            entry.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath );
-            entry.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath );
-        }
-        else/* if(groups.contains(fileBoxID))*/ {
-            isVirtual = true;
-            QMap<QString,QVariant> places = m_backend->places(fileBoxID);
-            QString b = localPath;
-            localPath = places[b].toString();
-            name = localPath;
-        }
-    }
-    if (!name.isEmpty() && isVirtual == true) {
-        QFileInfo f(localPath);
-        QString ort = localPath;
-        if (ort.startsWith(QDir::homePath())) {
-            ort.remove(0,QDir::homePath().size()+1);
-        }
-
-
-        if (!f.isDir()) {
-            KFileItem item(KFileItem::Unknown,KFileItem::Unknown,KUrl(localPath),false);
-            
-            if (localPath == QDir::homePath()+"/"+item.name()) {
-                ort = QDir::homePath();
-            }
-            if (ort.endsWith(item.name())) {
-                ort.remove(ort.size()-item.name().size()-1,item.name().size()+1);
-            }
-            if (ort == "" || ort == "/") {
-                entry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
-            }
-            else {
-                entry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name()+"\n"+ort);
-            }
-            
-            entry.insert(KIO::UDSEntry::UDS_SIZE , item.size());
-            entry.insert(KIO::UDSEntry::UDS_USER , item.user());
-            entry.insert(KIO::UDSEntry::UDS_GROUP , item.group());
-            entry.insert(KIO::UDSEntry::UDS_ACCESS , item.permissions());
-            entry.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME , item.time(KFileItem::ModificationTime).toTime_t());
-            entry.insert(KIO::UDSEntry::UDS_ACCESS_TIME ,item.time(KFileItem::AccessTime).toTime_t());
-            entry.insert(KIO::UDSEntry::UDS_CREATION_TIME , item.time(KFileItem::CreationTime).toTime_t());
-            entry.insert(KIO::UDSEntry::UDS_MIME_TYPE , item.determineMimeType());
-
-            entry.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath );
-            entry.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath );
-        }
-        else {
-            //todo: fix problems with directorys
-            //x-directory/normal
-            entry.insert(KIO::UDSEntry::UDS_MIME_TYPE , "inode/directory");
-            entry.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, f.fileName());
-            entry.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath );
-            entry.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath );
-            entry.insert(KIO::UDSEntry::UDS_LINK_DEST, localPath );
-        }
-    }
-
+        KIO::UDSEntry uds;
+         uds.insert( KIO::UDSEntry::UDS_NAME, m_backend->name(boxID) );
+        uds.insert( KIO::UDSEntry::UDS_DISPLAY_NAME, m_backend->name(boxID) );
+        uds.insert( KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR );
+        uds.insert( KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1( "inode/directory" ) );
+        uds.insert( KIO::UDSEntry::UDS_ICON_NAME,m_backend->icon(boxID));
+        //  uds.insert( KIO::UDSEntry::UDS_MODIFICATION_TIME, dt.toTime_t() );
+        //  uds.insert( KIO::UDSEntry::UDS_CREATION_TIME, dt.toTime_t() );
+        uds.insert( KIO::UDSEntry::UDS_ACCESS, 0700 );
+        //uds.insert( KIO::UDSEntry::UDS_USER, KUser().loginName() );
+        uds.insert( KIO::UDSEntry::UDS_TARGET_URL,"fileboxes:/"+boxID);
+        uds.insert( KIO::UDSEntry::UDS_SIZE , i18n("%1 items",QString::number(m_backend->boxSize(boxID))));
+        return uds;
 }
-//todo:make it work
-void FileBoxesProtocol::del( const KUrl &url, bool isfile )
+KIO::UDSEntry FileBoxesProtocol::createLink( QUrl url )
 {
-    QString path = url.path();
-    QStringList list = path.split("/");
-    QString boxID = list.at(list.size()-1);
-    if(m_backend->removeFile(boxID,path)) {
+        KIO::UDSEntry uds;
+        QString localPath = m_backend->localPath(url);
+       
+        KFileItem item(KFileItem::Unknown,KFileItem::Unknown,KUrl(localPath),false);
+        uds = item.entry();
+
+        uds.insert( KIO::UDSEntry::UDS_SIZE , item.size());
+        uds.insert( KIO::UDSEntry::UDS_USER , item.user());
+        uds.insert( KIO::UDSEntry::UDS_GROUP , item.group());
+        uds.insert( KIO::UDSEntry::UDS_ACCESS , item.permissions());
+        uds.insert( KIO::UDSEntry::UDS_MODIFICATION_TIME , item.time(KFileItem::ModificationTime).toTime_t());
+        uds.insert( KIO::UDSEntry::UDS_ACCESS_TIME ,item.time(KFileItem::AccessTime).toTime_t());
+        uds.insert( KIO::UDSEntry::UDS_CREATION_TIME , item.time(KFileItem::CreationTime).toTime_t());
+        uds.insert( KIO::UDSEntry::UDS_MIME_TYPE , item.determineMimeType());
+        uds.insert( KIO::UDSEntry::UDS_NAME, item.name() );
+        uds.insert( KIO::UDSEntry::UDS_DISPLAY_NAME, item.name()  );
+        uds.insert( KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString() );
+        
+        uds.insert( KIO::UDSEntry::UDS_TARGET_URL, localPath );
+        uds.insert( KIO::UDSEntry::UDS_LOCAL_PATH, localPath );
+        uds.insert( KIO::UDSEntry::UDS_LINK_DEST, localPath );
+        
+        return uds;
+}
+void FileBoxesProtocol::listDir( const KUrl& url )
+{
+    if(parseUrl(url) == 0) {
+        //create Boxes
+        QStringList boxes = m_backend->boxIDs();
+        foreach(QString id,boxes) {
+            listEntry(createBox(id), false);
+        }
+        listEntry( KIO::UDSEntry(), true );
+        finished();
+    } else {
+        //show files
+        QString boxID = url.path();
+        
+        boxID.remove("fileboxes:/");
+        boxID.remove("/");
+     
+        QList<QUrl> urls = m_backend->files(boxID);
+
+        foreach(QUrl k,urls) {
+            listEntry(createLink(k), false);
+        }
+        listEntry( KIO::UDSEntry(), true );
         finished();
     }
-    return;
+  
+}
+void FileBoxesProtocol::del( const KUrl& url, bool isfile )
+{
+  //  m_backend->removeFile(QUrl(url.url()));
+}
+void FileBoxesProtocol::put( const KUrl& url, int permissions, KIO::JobFlags flags )
+{
+    //todo: only if in box
+        //find out box id and add file
+   //m_back
+}
+void FileBoxesProtocol::mimetype( const KUrl& url )
+{
+    ForwardingSlaveBase::mimetype( url );
+}
+void FileBoxesProtocol::stat( const KUrl& url )
+{
+    ForwardingSlaveBase::stat( url );
+}
+void FileBoxesProtocol::prepareUDSEntry( KIO::UDSEntry& entry,
+                                                 bool listing ) const
+{
+    ForwardingSlaveBase::prepareUDSEntry( entry, listing );
+}
+bool FileBoxesProtocol::rewriteUrl(const KUrl& url, KUrl& newURL)
+{
+    return false;
 }
 
 extern "C" int KDE_EXPORT kdemain( int argc, char **argv )
