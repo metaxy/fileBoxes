@@ -54,83 +54,58 @@ BoxesBackend::~BoxesBackend()
 bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
 {
     qDebug() << " newFile boxID = " << boxID << " fileName = " << fileName;
-   
-    /* Nepomuk Test */
-    //_________________________________________________________________________________________-        
-    Resource f( fileName );
-
-    QList<Resource> parts = f.property( Nepomuk::Vocabulary::NIE::isPartOf() ).toResourceList();
-    QListIterator<Resource> it_parts( parts );
-    while( it_parts.hasNext() )
-        qDebug() << "File hasPart : " << it_parts.next().genericLabel();
-    //boxRes.setLabel(name(boxID));
-    f.addProperty( Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID) );
     
-    QList<Resource> tags = f.property( Soprano::Vocabulary::NAO::hasTag() ).toResourceList();
-    QListIterator<Resource> it( tags );
-    while( it.hasNext() )
-        qDebug() << "File tagged with tag 2: " << it.next().genericLabel();
-    //_________________________________________________________________________________________-    
+    Resource b = boxRes(boxID);
+    b.setLabel(name(boxID));
+    
+    Resource f(fileName);
+
+    f.addProperty(Nepomuk::Vocabulary::NIE::isPartOf(), b);
 
     return true;
 }
-bool BoxesBackend::removeFile(const QString &fileName,const QString &boxID)
+bool BoxesBackend::removeFile(const QString &fileName, const QString &boxID)
 {
-    Resource f( fileName );
+    Resource f(fileName);
     f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
-    //_______________________________________________________________
-      
-   /* QDir dir;
-    bool error = false;
-    if (isFile) {
-        error = dir.remove(fileName);
-    } else {
-        error = dir.rmdir(fileName);
-    }
-
-    BoxSettings set = settings(boxID);
-    set.places[fileName].clear();
-    setSettings(boxID, set);*/
     return true;
 }
 bool BoxesBackend::removeFiles(const QStringList &files, const QString &boxID)
 {
-    QDir d(m_fileBoxesHome + "/" + boxID + "/");
     for (int i = 0; i < files.size(); ++i) {
-        removeFile(files.at(i),boxID);
+        removeFile(files.at(i), boxID);
     }
     return true;
-    //todo:remove in places
 }
 bool BoxesBackend::removeAllFiles(const QString &boxID)
 {
-    Nepomuk::Query::ResourceTerm partTerm( boxRes(boxID) );
-    Nepomuk::Query::ComparisonTerm term( Nepomuk::Vocabulary::NIE::isPartOf(), 
-                                     partTerm, 
-                                     Nepomuk::Query::ComparisonTerm::Equal);
-    Nepomuk::Query::Query query( term );
+    Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
+    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::NIE::isPartOf(),
+                                        partTerm,
+                                        Nepomuk::Query::ComparisonTerm::Equal);
+    Nepomuk::Query::Query query(term);
     QString q = query.toSparqlQuery();
-    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery( q, Soprano::Query::QueryLanguageSparql );
-    while( it.next() ) {
-        Resource f( it.binding(0).uri());
+    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery(q, Soprano::Query::QueryLanguageSparql);
+    while (it.next()) {
+        Resource f(it.binding(0).uri());
         f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
     }
-   
+
 }
 QList<QUrl> BoxesBackend::files(const QString &boxID)
 {
     qDebug() << "files";
-    Nepomuk::Query::ResourceTerm partTerm( boxRes(boxID) );
-    Nepomuk::Query::ComparisonTerm term( Nepomuk::Vocabulary::NIE::isPartOf(), 
-                                     partTerm, 
-                                     Nepomuk::Query::ComparisonTerm::Equal);
-    Nepomuk::Query::Query query( term );
+    Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
+    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::NIE::isPartOf(),
+                                        partTerm,
+                                        Nepomuk::Query::ComparisonTerm::Equal);
+    Nepomuk::Query::Query query(term);
     QString q = query.toSparqlQuery();
     qDebug() << q;
-    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery( q, Soprano::Query::QueryLanguageSparql );
+    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery(q, Soprano::Query::QueryLanguageSparql);
     QList<QUrl> urls;
-    while( it.next() ) {
-        Resource f( it.binding(0).uri());
+    while (it.next()) {
+        Resource f(it.binding(0).uri());
         urls << it.binding(0).uri();
     }
     return urls;
@@ -212,10 +187,6 @@ unsigned int BoxesBackend::boxSize(const QString &boxID)
     return files(boxID).size();
 }
 
-QString BoxesBackend::fileBoxesHome()
-{
-    return m_fileBoxesHome;
-}
 bool BoxesBackend::removeBox(const QString &boxID)
 {
     removeAllFiles(boxID);
@@ -228,12 +199,12 @@ void BoxesBackend::sync()
 
 Nepomuk::Resource BoxesBackend::boxRes(const QString &boxID)
 {
-    QUrl boxUrl("fileboxes:/"+boxID);
-    Resource res( boxUrl );
+    QUrl boxUrl("fileboxes:/" + boxID);
+    Resource res(boxUrl);
     return res;
 }
 QString BoxesBackend::localPath(QUrl url)
 {
-     Resource f( url );
-     return f.property(Nepomuk::Vocabulary::NIE::url()).toUrl().toLocalFile();
+    Resource f(url);
+    return f.property(Nepomuk::Vocabulary::NIE::url()).toUrl().toLocalFile();
 }

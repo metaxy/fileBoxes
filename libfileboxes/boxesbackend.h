@@ -35,9 +35,9 @@ public:
     QString newBox(const QString &fileName, const QString &icon);
 
     bool removeBox(const QString &boxID);
+    bool removeFile(const QString& fileName, const QString& boxID);
     bool removeFiles(const QStringList &fileNames, const QString &boxID);
     bool removeAllFiles(const QString &boxID);
-    bool removeFile(const QString& fileName, const QString& boxID);
 
     QStringList boxIDs();
     QStringList boxNames();
@@ -51,9 +51,8 @@ public:
     QString icon(const QString &boxID);
     bool hasNew(const QString &boxID);
     void setHasNew(const bool &hasNew, const QString &boxID);
-    
+
     unsigned int boxSize(const QString &boxID);
-    QString fileBoxesHome();
     QString localPath(QUrl url);
 
     void sync();

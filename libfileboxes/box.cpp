@@ -33,7 +33,6 @@ Box::Box(const QString &boxID = "", const QString & name = "Box", const QString 
         //create new box
         m_boxID = m_backend.newBox(name, icon);
     }
-
 }
 bool Box::addFiles(const QStringList &files)
 {

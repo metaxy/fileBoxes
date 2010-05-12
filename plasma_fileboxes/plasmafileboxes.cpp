@@ -14,18 +14,18 @@
 
 
 PlasmaFileBoxes::PlasmaFileBoxes(QObject *parent, const QVariantList &args)
-    : Plasma::Applet(parent, args)
+        : Plasma::Applet(parent, args)
 {
     setBackgroundHints(DefaultBackground);
 
     setHasConfigurationInterface(true);
-    setAspectRatioMode( Plasma::IgnoreAspectRatio );
+    setAspectRatioMode(Plasma::IgnoreAspectRatio);
     setAcceptDrops(true);
     resize(200, 200);
     qDebug() << "init backend";
     m_backend = new BoxesBackend();
-   
-}   
+
+}
 
 
 PlasmaFileBoxes::~PlasmaFileBoxes()
@@ -36,10 +36,10 @@ void PlasmaFileBoxes::init()
 {
     m_layout = new QGraphicsLinearLayout;
     this->setLayout(m_layout);
-    m_layout->setContentsMargins(0,0,0,0);
+    m_layout->setContentsMargins(0, 0, 0, 0);
     //m_layout->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
     m_layout->setOrientation(Qt::Vertical);
-    
+
     QStringList boxIDs = m_backend->boxIDs();
     for (int i = 0; i < boxIDs.size(); ++i) {
         newBox(boxIDs.at(i), m_backend->name(boxIDs.at(i)), m_backend->icon(boxIDs.at(i)));
@@ -48,16 +48,17 @@ void PlasmaFileBoxes::init()
         QString newBoxID = m_backend->newBox(i18n("Default"), "filebox");
         newBox(newBoxID, i18n("Default"), "filebox");
     }
-    
+
 }
 void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
 {
     qDebug() << "new Box";
-    FileBox *box =  new FileBox(m_layout,boxID,name,icon,m_backend);
-
+    FileBox *box =  new FileBox(m_layout, boxID, name, icon, m_backend);
+    box->setObjectName("box_" + boxID);
     m_layout->addItem(box);
-   
+
 }
+
 
 /*  initBoxes();//
     generateIcons();
@@ -67,14 +68,14 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
     KConfigGroup cg = config();
     m_layout = cg.readEntry("layout", 0); // 0 = Vertical, 1 = Horizontal
     m_showName = cg.readEntry("showName", true);
-    
+
     //actions
     actions.clear();
     QAction *anewBox = new QAction(tr("New Box"), this );
     anewBox->setIcon( KIconLoader::global()->loadIcon( "list-add",KIconLoader::NoGroup,48, KIconLoader::DefaultState, QStringList(), 0L, false ) );
     actions.append( anewBox );
     connect( anewBox, SIGNAL( triggered(bool) ), this, SLOT( newBox() ) );
-    
+
     //boxActions
     boxActions.clear();
     //
@@ -94,8 +95,8 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
     aremoveBox->setIcon( KIconLoader::global()->loadIcon( "list-remove",KIconLoader::NoGroup,48, KIconLoader::DefaultState, QStringList(), 0L, false ) );
     boxActions.append( aremoveBox );
     connect( aremoveBox, SIGNAL( triggered(bool) ), this, SLOT( removeBox() ) );*/
-    //
-    
+//
+
 
 /*void PlasmaFileBoxes::createConfigurationInterface(KConfigDialog *parent)
 {
@@ -104,13 +105,13 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
     parent->addPage(widget, i18n("General"), Applet::icon());
     connect(parent, SIGNAL(applyClicked()), this, SLOT(configAccepted()));
     connect(parent, SIGNAL(okClicked()), this, SLOT(configAccepted()));
-    
+
     QStringList layouts;
     layouts << "Vertical" << "Horizontal";
     configUi.comboBox_layout->clear();
     configUi.comboBox_layout->insertItems(0,layouts);
     configUi.comboBox_layout->setCurrentIndex(m_layout);
-    
+
     configUi.checkBox_showName->setChecked(m_showName);
 
 }*/
@@ -118,13 +119,13 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
 {
     bool changed = false;
     KConfigGroup cg = config();
-    if (m_showName != configUi.checkBox_showName->isChecked()) 
+    if (m_showName != configUi.checkBox_showName->isChecked())
     {
         m_showName = configUi.checkBox_showName->isChecked();
         cg.writeEntry("showName", m_showName);
         changed = true;
     }
-    if (m_layout != configUi.comboBox_layout->currentIndex()) 
+    if (m_layout != configUi.comboBox_layout->currentIndex())
     {
         m_layout = configUi.comboBox_layout->currentIndex();
         cg.writeEntry("layout", m_layout);
@@ -135,7 +136,7 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
         update();
         emit configNeedsSaving();
     }
-    
+
 }*/
 /*void PlasmaFileBoxes::paintInterface(QPainter *p,const QStyleOptionGraphicsItem *option, const QRect &contentsRect)
 {
@@ -161,7 +162,7 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
                 p->setPen(Qt::black);
                 p->drawText(QPointF(paddingLeft+iconWidth+10,(i*iconHeight)+10+(iconHeight/2)),boxes.at(i)->name());
             }
-            
+
             //draw shadow
             p->setPen(QColor(0,0,0,100));//black
             p->setBrush(QColor(0,0,0,100));//black
@@ -196,7 +197,7 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
             {
                 p->drawText(QPointF(paddingLeft+iconWidth-22,((i+1)*iconHeight)),QString::number(numb));//todo: to many files
             }
-            
+
         }
     }
     else if(m_layout == 1)
@@ -246,7 +247,7 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
                 p->setBrush(noNew);
             }
             p->drawEllipse ( QPointF(((i+1)*(iconWidth+paddingBetweenBoxes))+paddingLeft-14,paddingTop+iconHeight-(iconHeight/6)-1), radius, radius );
-            
+
             //draw count of files
             p->setPen(Qt::white);
             p->setBrush(Qt::NoBrush);
@@ -263,7 +264,7 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
             {
                 p->drawText(QPointF(((i+1)*(iconWidth+paddingBetweenBoxes))+paddingLeft-14-radius,paddingTop+iconHeight-(iconHeight/6)-1+(radius/2)),QString::number(numb));//todo: to many files
             }
-            
+
         }
     }
     p->save();

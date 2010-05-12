@@ -27,24 +27,24 @@ class FileBoxesProtocol : public KIO::ForwardingSlaveBase
 public:
     FileBoxesProtocol(const QByteArray& protocol, const QByteArray &pool, const QByteArray &app);
     virtual ~FileBoxesProtocol();
-    void listDir( const KUrl& url );
-    void stat( const KUrl& url );
-    void del( const KUrl& url, bool isfile );
-    void mimetype( const KUrl& url );
-    void put( const KUrl& url, int permissions, KIO::JobFlags flags );
+    void listDir(const KUrl& url);
+    void stat(const KUrl& url);
+    void del(const KUrl& url, bool isfile);
+    void mimetype(const KUrl& url);
+    void put(const KUrl& url, int permissions, KIO::JobFlags flags);
 
 protected:
 
-        void prepareUDSEntry( KIO::UDSEntry &entry,
-                              bool listing = false ) const;
-        bool rewriteUrl( const KUrl& url, KUrl& newURL );
+    void prepareUDSEntry(KIO::UDSEntry &entry,
+                         bool listing = false) const;
+    bool rewriteUrl(const KUrl& url, KUrl& newURL);
 private:
     QString m_fileBoxesHome;
     BoxesBackend *m_backend;
-    KIO::UDSEntry createLink( QUrl url);
-    KIO::UDSEntry createBox( const QString& boxID );
+    KIO::UDSEntry createLink(QUrl url);
+    KIO::UDSEntry createBox(const QString& boxID);
 
-    int parseUrl( const KUrl& url );
+    int parseUrl(const KUrl& url);
 };
 
 #endif

@@ -4,13 +4,16 @@
 #include <QToolButton>
 FileBoxIcon::FileBoxIcon(const QString &boxID, const QString &name, const QString &icon) : Plasma::ToolButton()
 {
+    this->nativeWidget()->setAcceptDrops(true);
     setAcceptDrops(true);
+    setAcceptHoverEvents(true);
+    setAcceptsHoverEvents(true);
     setAutoRaise(true);
-    
+
     m_box =  new Box(boxID, name, icon);
     m_icon = icon;
     setFileBoxIcon(m_icon);
-   
+
 }
 void FileBoxIcon::setFileBoxIcon(const QString &iconName)
 {
@@ -18,7 +21,7 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName)
     QColor areNew(102, 219, 67, 255);//green
     qreal size = qMin(this->size().width() , this->size().height()) - 5;
     qreal sizeX = size, sizeY = size;
-    this->nativeWidget()->setIconSize(QSize(sizeX,sizeY));
+    this->nativeWidget()->setIconSize(QSize(sizeX, sizeY));
     qreal circleWidth = 14, circleHeight = 14;
 
     QIcon icon = KIcon(iconName);
@@ -59,4 +62,58 @@ void FileBoxIcon::resizeEvent(QGraphicsSceneResizeEvent* event)
 {
     setFileBoxIcon(m_icon);
     Plasma::ToolButton::resizeEvent(event);
+}
+void FileBoxIcon::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
+{
+    qDebug() << Q_FUNC_INFO << acceptDrops();
+    if (event->mimeData()->hasUrls()) {
+        event->accept();
+        //event->acceptProposedAction();
+    }
+}
+void FileBoxIcon::dragMoveEvent(QGraphicsSceneDragDropEvent* event)
+{
+   event->accept();
+}
+
+void FileBoxIcon::dropEvent(QGraphicsSceneDragDropEvent *event)
+{
+    qDebug() << Q_FUNC_INFO;
+    if (event->mimeData()->hasUrls()) {
+        QList<QString> files;
+        for (int i = 0; i < event->mimeData()->urls().size(); ++i) {
+            files << event->mimeData()->urls().at(i).toLocalFile();
+        }
+        if (files.size() > 0) {
+            m_box->addFiles(files);
+            m_box->setHasNew(true);
+            setFileBoxIcon(m_icon);
+        }
+    }
+    event->acceptProposedAction();
+}
+
+void FileBoxIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
+{
+    qDebug() << Q_FUNC_INFO;
+    if (event->button() == Qt::LeftButton) {
+        dragStartPosition = event->pos();
+    }
+}
+
+void FileBoxIcon::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    qDebug() << Q_FUNC_INFO;
+    if (!(event->buttons() & Qt::LeftButton)) {
+        return;
+    }
+
+    QDrag *drag = new QDrag(this->widget());
+    QMimeData *mimeData = new QMimeData;
+
+    mimeData->setUrls(m_box->getFiles());
+    drag->setMimeData(mimeData);
+    drag->exec(Qt::CopyAction | Qt::MoveAction);
+    m_box->setHasNew(false);
+    setFileBoxIcon(m_icon);
 }

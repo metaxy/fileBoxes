@@ -38,7 +38,7 @@ public:
     /**
      * Default Constructor
      */
-    MainWindow(QWidget *parent=0);
+    MainWindow(QWidget *parent = 0);
 
     /**
      * Default Destructor

@@ -29,18 +29,18 @@ static const char version[] = "0.1";
 
 int main(int argc, char **argv)
 {
-   KAboutData aboutData( "app_fileboxes", 0,
-      ki18n("Fileboxes Example"), "0.1",
-      ki18n("A fileboxes example"),
-      KAboutData::License_GPL_V3,
-      ki18n("Copyright (c) 2009 Paul Walger") );
-  KCmdLineArgs::init( argc, argv, &aboutData );
- 
-  KApplication app;
- 
-  MainWindow* window = new MainWindow();
-  window->setWindowIcon(KIcon("filebox"));
-  window->show();
- 
-  return app.exec();
+    KAboutData aboutData("app_fileboxes", 0,
+                         ki18n("Fileboxes Example"), "0.1",
+                         ki18n("A fileboxes example"),
+                         KAboutData::License_GPL_V3,
+                         ki18n("Copyright (c) 2009 Paul Walger"));
+    KCmdLineArgs::init(argc, argv, &aboutData);
+
+    KApplication app;
+
+    MainWindow* window = new MainWindow();
+    window->setWindowIcon(KIcon("filebox"));
+    window->show();
+
+    return app.exec();
 }

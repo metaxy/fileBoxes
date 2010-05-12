@@ -30,9 +30,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSizePolicy>
 MainWindow::MainWindow(QWidget *parent) : KXmlGuiWindow(parent)
 {
-  FileBoxesWidget *fileboxes = new FileBoxesWidget(this);
-  fileboxes->setObjectName("fileBoxesWidget");
-  setCentralWidget(fileboxes);
+    FileBoxesWidget *fileboxes = new FileBoxesWidget(this);
+    fileboxes->setObjectName("fileBoxesWidget");
+    setCentralWidget(fileboxes);
 }
 
 MainWindow::~MainWindow()

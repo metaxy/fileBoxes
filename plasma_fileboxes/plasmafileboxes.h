@@ -17,31 +17,32 @@ class QSizeF;
 // Define our plasma Applet
 class PlasmaFileBoxes : public Plasma::Applet
 {
-	Q_OBJECT
-	public:
-		PlasmaFileBoxes(QObject *parent, const QVariantList &args);
-		~PlasmaFileBoxes();
-		void init();
-		//void paintInterface(QPainter *painter,const QStyleOptionGraphicsItem *option,const QRect& contentsRect);
-	protected:
-		//void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
-		//void dropEvent(QGraphicsSceneDragDropEvent *event);
-		//virtual QList<QAction*> contextualActions();
-		//void createConfigurationInterface(KConfigDialog *parent);
-	private:
-		QList<QAction *> actions;
-		QList<QAction *> boxActions;
-		Ui::fileBoxesConfig configUi;
-		void createMenu();
+    Q_OBJECT
+public:
+    PlasmaFileBoxes(QObject *parent, const QVariantList &args);
+    ~PlasmaFileBoxes();
+    void init();
+    //void paintInterface(QPainter *painter,const QStyleOptionGraphicsItem *option,const QRect& contentsRect);
+protected:
+    //void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
+    //void dropEvent(QGraphicsSceneDragDropEvent *event);
+    //virtual QList<QAction*> contextualActions();
+    //void createConfigurationInterface(KConfigDialog *parent);
+    // virtual QList<QAction*> contextualActions();
+private:
+    QList<QAction *> actions;
+    QList<QAction *> boxActions;
+    Ui::fileBoxesConfig configUi;
+    void createMenu();
     void newBox(QString boxID, QString name, QString icon);
 
-        BoxesBackend *m_backend;
-        QGraphicsLinearLayout *m_layout;
+    BoxesBackend *m_backend;
+    QGraphicsLinearLayout *m_layout;
 
-	public slots:
-		//void configAccepted();
+public slots:
+    //void configAccepted();
 };
- 
+
 // This is the command that links your applet to the .desktop file
-K_EXPORT_PLASMA_APPLET(plasma-fileboxes, PlasmaFileBoxes)
+K_EXPORT_PLASMA_APPLET(plasma - fileboxes, PlasmaFileBoxes)
 #endif

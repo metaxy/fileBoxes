@@ -56,115 +56,114 @@ FileBoxesProtocol::FileBoxesProtocol(const QByteArray& protocol, const QByteArra
 FileBoxesProtocol::~FileBoxesProtocol()
 {
 }
-int FileBoxesProtocol::parseUrl( const KUrl& url )
+int FileBoxesProtocol::parseUrl(const KUrl& url)
 {
     kDebug() << url;
     const QString path = url.path(KUrl::RemoveTrailingSlash);
-    if( path.isEmpty() || path == QLatin1String("/") ) {
+    if (path.isEmpty() || path == QLatin1String("/")) {
         return 0;
-    }
-    else {
+    } else {
         return 1;
     }
 }
-KIO::UDSEntry FileBoxesProtocol::createBox( const QString& boxID )
+KIO::UDSEntry FileBoxesProtocol::createBox(const QString& boxID)
 {
-        KIO::UDSEntry uds;
-         uds.insert( KIO::UDSEntry::UDS_NAME, m_backend->name(boxID) );
-        uds.insert( KIO::UDSEntry::UDS_DISPLAY_NAME, m_backend->name(boxID) );
-        uds.insert( KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR );
-        uds.insert( KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1( "inode/directory" ) );
-        uds.insert( KIO::UDSEntry::UDS_ICON_NAME,m_backend->icon(boxID));
-        //  uds.insert( KIO::UDSEntry::UDS_MODIFICATION_TIME, dt.toTime_t() );
-        //  uds.insert( KIO::UDSEntry::UDS_CREATION_TIME, dt.toTime_t() );
-        uds.insert( KIO::UDSEntry::UDS_ACCESS, 0700 );
-        //uds.insert( KIO::UDSEntry::UDS_USER, KUser().loginName() );
-        uds.insert( KIO::UDSEntry::UDS_TARGET_URL,"fileboxes:/"+boxID);
-        uds.insert( KIO::UDSEntry::UDS_SIZE , i18n("%1 items",QString::number(m_backend->boxSize(boxID))));
-        return uds;
+    KIO::UDSEntry uds;
+    uds.insert(KIO::UDSEntry::UDS_NAME, m_backend->name(boxID));
+    uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, m_backend->name(boxID));
+    uds.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
+    uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/directory"));
+    uds.insert(KIO::UDSEntry::UDS_ICON_NAME, m_backend->icon(boxID));
+    //  uds.insert( KIO::UDSEntry::UDS_MODIFICATION_TIME, dt.toTime_t() );
+    //  uds.insert( KIO::UDSEntry::UDS_CREATION_TIME, dt.toTime_t() );
+    uds.insert(KIO::UDSEntry::UDS_ACCESS, 0700);
+    //uds.insert( KIO::UDSEntry::UDS_USER, KUser().loginName() );
+    uds.insert(KIO::UDSEntry::UDS_TARGET_URL, "fileboxes:/" + boxID);
+    uds.insert(KIO::UDSEntry::UDS_SIZE , i18n("%1 items", QString::number(m_backend->boxSize(boxID))));
+    return uds;
 }
-KIO::UDSEntry FileBoxesProtocol::createLink( QUrl url )
+KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
 {
-        KIO::UDSEntry uds;
-        QString localPath = m_backend->localPath(url);
-       
-        KFileItem item(KFileItem::Unknown,KFileItem::Unknown,KUrl(localPath),false);
-        uds = item.entry();
+    KIO::UDSEntry uds;
+    QString localPath = m_backend->localPath(url);
 
-        uds.insert( KIO::UDSEntry::UDS_SIZE , item.size());
-        uds.insert( KIO::UDSEntry::UDS_USER , item.user());
-        uds.insert( KIO::UDSEntry::UDS_GROUP , item.group());
-        uds.insert( KIO::UDSEntry::UDS_ACCESS , item.permissions());
-        uds.insert( KIO::UDSEntry::UDS_MODIFICATION_TIME , item.time(KFileItem::ModificationTime).toTime_t());
-        uds.insert( KIO::UDSEntry::UDS_ACCESS_TIME ,item.time(KFileItem::AccessTime).toTime_t());
-        uds.insert( KIO::UDSEntry::UDS_CREATION_TIME , item.time(KFileItem::CreationTime).toTime_t());
-        uds.insert( KIO::UDSEntry::UDS_MIME_TYPE , item.determineMimeType());
-        uds.insert( KIO::UDSEntry::UDS_NAME, item.name() );
-        uds.insert( KIO::UDSEntry::UDS_DISPLAY_NAME, item.name()  );
-        uds.insert( KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString() );
-        
-        uds.insert( KIO::UDSEntry::UDS_TARGET_URL, localPath );
-        uds.insert( KIO::UDSEntry::UDS_LOCAL_PATH, localPath );
-        uds.insert( KIO::UDSEntry::UDS_LINK_DEST, localPath );
-        
-        return uds;
+    KFileItem item(KFileItem::Unknown, KFileItem::Unknown, KUrl(localPath), false);
+    uds = item.entry();
+
+    uds.insert(KIO::UDSEntry::UDS_SIZE , item.size());
+    uds.insert(KIO::UDSEntry::UDS_USER , item.user());
+    uds.insert(KIO::UDSEntry::UDS_GROUP , item.group());
+    uds.insert(KIO::UDSEntry::UDS_ACCESS , item.permissions());
+    uds.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME , item.time(KFileItem::ModificationTime).toTime_t());
+    uds.insert(KIO::UDSEntry::UDS_ACCESS_TIME , item.time(KFileItem::AccessTime).toTime_t());
+    uds.insert(KIO::UDSEntry::UDS_CREATION_TIME , item.time(KFileItem::CreationTime).toTime_t());
+    uds.insert(KIO::UDSEntry::UDS_MIME_TYPE , item.determineMimeType());
+    uds.insert(KIO::UDSEntry::UDS_NAME, item.name());
+    uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
+    uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString());
+
+    uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
+    uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
+    uds.insert(KIO::UDSEntry::UDS_LINK_DEST, localPath);
+
+    return uds;
 }
-void FileBoxesProtocol::listDir( const KUrl& url )
+void FileBoxesProtocol::listDir(const KUrl& url)
 {
-    if(parseUrl(url) == 0) {
+    if (parseUrl(url) == 0) {
         //create Boxes
         QStringList boxes = m_backend->boxIDs();
-        foreach(QString id,boxes) {
+        foreach(QString id, boxes) {
             listEntry(createBox(id), false);
         }
-        listEntry( KIO::UDSEntry(), true );
+        listEntry(KIO::UDSEntry(), true);
         finished();
     } else {
         //show files
         QString boxID = url.path();
-        
+
         boxID.remove("fileboxes:/");
         boxID.remove("/");
-     
+
         QList<QUrl> urls = m_backend->files(boxID);
 
-        foreach(QUrl k,urls) {
+        foreach(QUrl k, urls) {
             listEntry(createLink(k), false);
         }
-        listEntry( KIO::UDSEntry(), true );
+        listEntry(KIO::UDSEntry(), true);
         finished();
     }
-  
+
 }
-void FileBoxesProtocol::del( const KUrl& url, bool isfile )
+void FileBoxesProtocol::del(const KUrl& url, bool isfile)
 {
-  //  m_backend->removeFile(QUrl(url.url()));
+    //  m_backend->removeFile(QUrl(url.url()));
 }
-void FileBoxesProtocol::put( const KUrl& url, int permissions, KIO::JobFlags flags )
+void FileBoxesProtocol::put(const KUrl& url, int permissions, KIO::JobFlags flags)
 {
     //todo: only if in box
-        //find out box id and add file
-   //m_back
+    //find out box id and add file
+    //m_back
 }
-void FileBoxesProtocol::mimetype( const KUrl& url )
+void FileBoxesProtocol::mimetype(const KUrl& url)
 {
-    ForwardingSlaveBase::mimetype( url );
+    ForwardingSlaveBase::mimetype(url);
 }
-void FileBoxesProtocol::stat( const KUrl& url )
+void FileBoxesProtocol::stat(const KUrl& url)
 {
-    ForwardingSlaveBase::stat( url );
+    ForwardingSlaveBase::stat(url);
 }
-void FileBoxesProtocol::prepareUDSEntry( KIO::UDSEntry& entry,
-                                                 bool listing ) const
+void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry& entry,
+                                        bool listing) const
 {
-    ForwardingSlaveBase::prepareUDSEntry( entry, listing );
+    ForwardingSlaveBase::prepareUDSEntry(entry, listing);
 }
 bool FileBoxesProtocol::rewriteUrl(const KUrl& url, KUrl& newURL)
 {
     return false;
 }
 
-extern "C" int KDE_EXPORT kdemain( int argc, char **argv )
+extern "C" int KDE_EXPORT kdemain(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
     KComponentData("kio_fileboxes", "kdelibs4");
