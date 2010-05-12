@@ -169,7 +169,6 @@ QStringList BoxesBackend::boxNames()
     return ret;
 }
 
-
 QString BoxesBackend::name(const QString &boxID)
 {
     return settings(boxID).name;

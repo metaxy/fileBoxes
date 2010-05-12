@@ -61,7 +61,7 @@ FileBoxesWidget::~FileBoxesWidget()
 
 void FileBoxesWidget::newBox(const QString &boxID, const QString &name, const QString &icon)
 {
-    FileBoxWidget *box = new FileBoxWidget(topLayout->widget(), boxID, name, icon);
+    FileBoxWidget *box = new FileBoxWidget(topLayout->widget(), boxID, name, icon, backend);
     connect(box, SIGNAL(removeBox(QString)), this, SLOT(removeBox(QString)));
     connect(box, SIGNAL(newBoxDialog()), this, SLOT(newBoxDialog()));
     box->setObjectName("boxWidget_" + boxID);

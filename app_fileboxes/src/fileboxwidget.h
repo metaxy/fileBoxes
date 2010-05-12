@@ -44,7 +44,7 @@ public:
     /**
     * Default constructor
     */
-    FileBoxWidget(QWidget *parent, const QString &boxID, const QString &name, const QString &icon);
+    FileBoxWidget(QWidget *parent, const QString &boxID, const QString &name, const QString &icon, BoxesBackend * backend);
 
     /**
     * Destructor

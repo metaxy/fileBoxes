@@ -11,35 +11,37 @@
 #include <QStandardItemModel>
 #include <QPointF>
 #include "ui_fileBoxesConfig.h"
+#include <fileboxes/boxesbackend.h>
 class QSizeF;
 
 // Define our plasma Applet
-class plasmaFileBoxes : public Plasma::Applet
+class PlasmaFileBoxes : public Plasma::Applet
 {
 	Q_OBJECT
 	public:
-		plasmaFileBoxes(QObject *parent, const QVariantList &args);
-		~plasmaFileBoxes();
+		PlasmaFileBoxes(QObject *parent, const QVariantList &args);
+		~PlasmaFileBoxes();
 		void init();
-		void paintInterface(QPainter *painter,const QStyleOptionGraphicsItem *option,const QRect& contentsRect);
+		//void paintInterface(QPainter *painter,const QStyleOptionGraphicsItem *option,const QRect& contentsRect);
 	protected:
-		void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
-		void dropEvent(QGraphicsSceneDragDropEvent *event);
-		virtual QList<QAction*> contextualActions();
-		void createConfigurationInterface(KConfigDialog *parent);
+		//void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
+		//void dropEvent(QGraphicsSceneDragDropEvent *event);
+		//virtual QList<QAction*> contextualActions();
+		//void createConfigurationInterface(KConfigDialog *parent);
 	private:
-		Plasma::Svg m_svg;
 		QList<QAction *> actions;
 		QList<QAction *> boxActions;
-
 		Ui::fileBoxesConfig configUi;
-
 		void createMenu();
+    void newBox(QString boxID, QString name, QString icon);
+
+        BoxesBackend *m_backend;
+        QGraphicsLinearLayout *m_layout;
 
 	public slots:
-		void configAccepted();
+		//void configAccepted();
 };
  
 // This is the command that links your applet to the .desktop file
-K_EXPORT_PLASMA_APPLET(plasmaFileBoxes, plasmaFileBoxes)
+K_EXPORT_PLASMA_APPLET(plasma-fileboxes, PlasmaFileBoxes)
 #endif

@@ -1,8 +1,6 @@
 [Desktop Entry]
-Name=plasmafileboxes
-Name[x-test]=xxfileboxesxx
+Name=plasma-fileboxes
 Comment=File boxes
-Comment[x-test]=xxPlasma fileboxesxx
 Type=Service
 
 X-KDE-ServiceTypes=Plasma/Applet

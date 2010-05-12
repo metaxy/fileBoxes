@@ -30,7 +30,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QProcess>
-FileBoxWidget::FileBoxWidget(QWidget *parent, const QString &boxID, const QString &name, const QString &icon)
+FileBoxWidget::FileBoxWidget(QWidget *parent, const QString &boxID, const QString &name, const QString &icon, BoxesBackend * backend)
         : QWidget(parent)
 {
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -38,7 +38,7 @@ FileBoxWidget::FileBoxWidget(QWidget *parent, const QString &boxID, const QStrin
     QHBoxLayout *boxLayout = new QHBoxLayout(this);
     boxLayout->setObjectName("layout_" + boxID);
 
-    m_boxIcon = new FileBoxIcon(this, boxID, name, icon);
+    m_boxIcon = new FileBoxIcon(this, boxID, name, icon, backend);
 
     QLabel *label = new QLabel(this);
     label->setText(name);
@@ -46,7 +46,7 @@ FileBoxWidget::FileBoxWidget(QWidget *parent, const QString &boxID, const QStrin
     boxLayout->addWidget(m_boxIcon);
     boxLayout->addWidget(label);
 
-    m_backend = new BoxesBackend();
+    m_backend = backend;
     m_box = new Box(boxID, name, icon);
     setFileBoxID(boxID);
     setFileBoxIcon(icon);
