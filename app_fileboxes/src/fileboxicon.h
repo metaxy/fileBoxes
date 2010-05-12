@@ -62,6 +62,7 @@ private:
     Box *m_box;
     BoxesBackend *backend;
     QPoint dragStartPosition;
+    BoxesBackend* m_backend;
 };
 
 #endif // FILEBOXICON_H

@@ -29,14 +29,13 @@
 #include <QtGui/QPen>
 #include <QtGui/QPainter>
 
-FileBoxIcon::FileBoxIcon(QWidget *parent, const QString &boxID, const QString &name, const QString &icon, BoxesBackend* backend)
+FileBoxIcon::FileBoxIcon(QWidget *parent, const QString &boxID, const QString &name, const QString &icon, BoxesBackend* backenD)
         : QToolButton(parent)
 {
     setAcceptDrops(true);
     setToolButtonStyle(Qt::ToolButtonIconOnly);
     setAutoRaise(true);
     //setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,QSizePolicy::MinimumExpanding));
-    backend = backend;
     m_box = new Box(boxID, name, icon);
     setFileBoxID(boxID);
     setFileBoxIcon(icon);
