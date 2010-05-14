@@ -43,14 +43,14 @@
 #include <KLocale>
 
 
-
+#include <KIO/Job>
+#include <KIO/NetAccess>
 
 #include <QCoreApplication>
 FileBoxesProtocol::FileBoxesProtocol(const QByteArray& protocol, const QByteArray &pool, const QByteArray &app)
         : KIO::ForwardingSlaveBase(protocol, pool, app)
 {
     m_backend = new BoxesBackend();
-    m_fileBoxesHome = m_backend->fileBoxesHome();
 }
 
 FileBoxesProtocol::~FileBoxesProtocol()
@@ -84,12 +84,63 @@ KIO::UDSEntry FileBoxesProtocol::createBox(const QString& boxID)
 }
 KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
 {
+    //QString localPath = m_backend->localPath(url);
+    //
     KIO::UDSEntry uds;
-    QString localPath = m_backend->localPath(url);
+    if ( KIO::StatJob* job = KIO::stat( url, KIO::HideProgressInfo ) ) {
+        job->setAutoDelete( false );
+        if ( KIO::NetAccess::synchronousRun( job, 0 ) ) {
+            uds = job->statResult();
+        }
+        else {
+            //kDebug() << "failed to stat" << url;
+        }
+        delete job;
+    }
+    QUrl localUrl = m_backend->localUrl(url);
+    KUrl fileUrl( localUrl );
+    if ( uds.isDir() ) {
+        uds.insert( KIO::UDSEntry::UDS_URL, fileUrl.url());
+    }
 
+    if ( fileUrl.isLocalFile() ) {
+        uds.insert( KIO::UDSEntry::UDS_LOCAL_PATH, fileUrl.toLocalFile() );
+    }
+    uds.insert( KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString() );
+    KUrl u(url);
+    uds.insert( KIO::UDSEntry::UDS_NAME,  QString::fromAscii( u.toEncoded().toPercentEncoding( QByteArray(), QByteArray(""), '_' ) ) );
+
+    QString localPath = localUrl.toLocalFile();
     KFileItem item(KFileItem::Unknown, KFileItem::Unknown, KUrl(localPath), false);
-    uds = item.entry();
+    QString ort = localPath;
+    if (ort.startsWith(QDir::homePath())) {
+        ort.remove(0,QDir::homePath().size()+1);
+    }
+    if (localPath == QDir::homePath()+"/"+item.name()) {
+        ort = QDir::homePath();
+    }
+    if (ort.endsWith(item.name())) {
+        ort.remove(ort.size()-item.name().size()-1,item.name().size()+1);
+    }
+    if (ort == "" || ort == "/") {
+        uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
+    }
+    else {
+        uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name()+"\n"+ort);
+    }
 
+
+    QString mimetype = uds.stringValue( KIO::UDSEntry::UDS_MIME_TYPE );
+    if ( mimetype.isEmpty() ) {
+        mimetype = KMimeType::findByUrl(fileUrl)->name();
+        uds.insert( KIO::UDSEntry::UDS_MIME_TYPE, mimetype );
+    }
+  
+    if(item.isFile()) {
+        uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
+        uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
+    }
+/*
     uds.insert(KIO::UDSEntry::UDS_SIZE , item.size());
     uds.insert(KIO::UDSEntry::UDS_USER , item.user());
     uds.insert(KIO::UDSEntry::UDS_GROUP , item.group());
@@ -99,12 +150,15 @@ KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
     uds.insert(KIO::UDSEntry::UDS_CREATION_TIME , item.time(KFileItem::CreationTime).toTime_t());
     uds.insert(KIO::UDSEntry::UDS_MIME_TYPE , item.determineMimeType());
     uds.insert(KIO::UDSEntry::UDS_NAME, item.name());
-    uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
+    //uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
     uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString());
-
+    
+    uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
+    uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
     uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
     uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
-    uds.insert(KIO::UDSEntry::UDS_LINK_DEST, localPath);
+    uds.insert(KIO::UDSEntry::UDS_LINK_DEST, localPath);*/
+    
 
     return uds;
 }
@@ -151,7 +205,11 @@ void FileBoxesProtocol::mimetype(const KUrl& url)
 }
 void FileBoxesProtocol::stat(const KUrl& url)
 {
-    ForwardingSlaveBase::stat(url);
+    if (parseUrl(url) != 0) {
+        
+    } else {
+        ForwardingSlaveBase::stat(url);
+    }
 }
 void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry& entry,
                                         bool listing) const
@@ -160,6 +218,13 @@ void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry& entry,
 }
 bool FileBoxesProtocol::rewriteUrl(const KUrl& url, KUrl& newURL)
 {
+  /*  if (parseUrl(url) != 0) {
+        QString urla = url.toLocalFile();
+        urla.remove("fileboxes:/");
+        urla.remove(0,urla.indexOf('/'));
+        newURL.setPath("file:///home/paul");
+        return true;
+    }*/
     return false;
 }
 

@@ -31,6 +31,7 @@
 #include <nepomuk/resourceterm.h>
 #include <nepomuk/comparisonterm.h>
 #include <nepomuk/literalterm.h>
+#include <nepomuk/resourcetypeterm.h>
 #include "nao.h"
 #include "nie.h"
 #include "nfo.h"
@@ -90,7 +91,7 @@ bool BoxesBackend::removeAllFiles(const QString &boxID)
         Resource f(it.binding(0).uri());
         f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
     }
-
+    return true;
 }
 QList<QUrl> BoxesBackend::files(const QString &boxID)
 {
@@ -207,4 +208,9 @@ QString BoxesBackend::localPath(QUrl url)
 {
     Resource f(url);
     return f.property(Nepomuk::Vocabulary::NIE::url()).toUrl().toLocalFile();
+}
+QUrl BoxesBackend::localUrl(QUrl url)
+{
+    Resource f(url);
+    return f.property(Nepomuk::Vocabulary::NIE::url()).toUrl();
 }

@@ -12,6 +12,7 @@
 #include <QPointF>
 #include "ui_fileBoxesConfig.h"
 #include <fileboxes/boxesbackend.h>
+#include <KConfigDialog>
 class QSizeF;
 
 // Define our plasma Applet
@@ -27,7 +28,7 @@ protected:
     //void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
     //void dropEvent(QGraphicsSceneDragDropEvent *event);
     //virtual QList<QAction*> contextualActions();
-    //void createConfigurationInterface(KConfigDialog *parent);
+    void createConfigurationInterface(KConfigDialog *parent);
     // virtual QList<QAction*> contextualActions();
 private:
     QList<QAction *> actions;
@@ -38,9 +39,12 @@ private:
 
     BoxesBackend *m_backend;
     QGraphicsLinearLayout *m_layout;
+    int m_layoutOrientation;
+    bool m_showName;
 
 public slots:
-    //void configAccepted();
+    void newBoxDialog();
+    void configAccepted();
 };
 
 // This is the command that links your applet to the .desktop file

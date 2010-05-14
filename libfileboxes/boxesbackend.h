@@ -54,6 +54,7 @@ public:
 
     unsigned int boxSize(const QString &boxID);
     QString localPath(QUrl url);
+    QUrl localUrl(QUrl url);
 
     void sync();
 private:

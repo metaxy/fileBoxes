@@ -79,5 +79,9 @@ bool Box::removeBox()
 }
 QList<QUrl> Box::getFiles()
 {
-    return m_backend.files(m_boxID);
+    QList<QUrl> urls;
+    foreach(QUrl url,m_backend.files(m_boxID)) {
+        urls << m_backend.localPath(url);
+    }
+    return urls;
 }

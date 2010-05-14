@@ -6,6 +6,7 @@ Type=Service
 X-KDE-ServiceTypes=Plasma/Applet
 X-KDE-Library=plasma_applet_fileboxes
 X-KDE-PluginInfo-Author=Paul Walger
+X-KDE-PluginInfo-Icon=fileboxes
 X-KDE-PluginInfo-Email=metaxy@walger.name
 X-KDE-PluginInfo-Name=fileboxes
 X-KDE-PluginInfo-Version=0.1

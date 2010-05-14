@@ -11,8 +11,8 @@
 #include <plasma/widgets/label.h>
 #include "filebox.h"
 #include <KConfigDialog>
-
-
+#include <QInputDialog>
+#include <kinputdialog.h>
 PlasmaFileBoxes::PlasmaFileBoxes(QObject *parent, const QVariantList &args)
         : Plasma::Applet(parent, args)
 {
@@ -34,11 +34,19 @@ PlasmaFileBoxes::~PlasmaFileBoxes()
 
 void PlasmaFileBoxes::init()
 {
+    KConfigGroup cg = config();
+    m_layoutOrientation = cg.readEntry("layout", 0); // 0 = Vertical, 1 = Horizontal
+    m_showName = cg.readEntry("showName", true);
+    
     m_layout = new QGraphicsLinearLayout;
     this->setLayout(m_layout);
     m_layout->setContentsMargins(0, 0, 0, 0);
-    //m_layout->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-    m_layout->setOrientation(Qt::Vertical);
+    m_layout->setSpacing(0);
+    m_layout->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+    if(m_layoutOrientation == 0)
+        m_layout->setOrientation(Qt::Vertical);
+    else
+        m_layout->setOrientation(Qt::Horizontal);
 
     QStringList boxIDs = m_backend->boxIDs();
     for (int i = 0; i < boxIDs.size(); ++i) {
@@ -54,51 +62,44 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
 {
     qDebug() << "new Box";
     FileBox *box =  new FileBox(m_layout, boxID, name, icon, m_backend);
+    box->setContentsMargins(0,0,0,0);
+    connect(box->m_fileBoxIcon,SIGNAL(newBoxDialog()),this,SLOT(newBoxDialog()));
     box->setObjectName("box_" + boxID);
+    box->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
     m_layout->addItem(box);
+    
+  
+   
 
 }
 
+void PlasmaFileBoxes::newBoxDialog()
+{
+    qDebug() << "newBoxDialog";
+    bool ok;
+    QString boxName;
+    
+    QString text = KInputDialog::getText(i18n("Box Name"), i18n("Box Name:"), i18n("Box"), &ok);
+    if (ok && !text.isEmpty()) {
+        boxName = text;
+    } else {
+        boxName = i18n("Box");
+    }
+    QString boxID = m_backend->newBox(boxName, "filebox");
+    newBox(boxID, boxName, "filebox");
+}
 
 /*  initBoxes();//
     generateIcons();
     //
     paddingLeft = 17;
     paddingTop = 5;
-    KConfigGroup cg = config();
-    m_layout = cg.readEntry("layout", 0); // 0 = Vertical, 1 = Horizontal
-    m_showName = cg.readEntry("showName", true);
+  
 
-    //actions
-    actions.clear();
-    QAction *anewBox = new QAction(tr("New Box"), this );
-    anewBox->setIcon( KIconLoader::global()->loadIcon( "list-add",KIconLoader::NoGroup,48, KIconLoader::DefaultState, QStringList(), 0L, false ) );
-    actions.append( anewBox );
-    connect( anewBox, SIGNAL( triggered(bool) ), this, SLOT( newBox() ) );
-
-    //boxActions
-    boxActions.clear();
-    //
-    QAction *aopenBox = new QAction(tr("Open"), this );
-    aopenBox->setIcon( KIconLoader::global()->loadIcon( "system-file-manager",KIconLoader::NoGroup,48, KIconLoader::DefaultState, QStringList(), 0L, false ) );
-    boxActions.append( aopenBox );
-    connect( aopenBox, SIGNAL( triggered(bool) ), this, SLOT( openBox() ) );
-    //
-    QAction *aclearBox = new QAction(tr("Clear","Clean up"), this );
-    aclearBox->setIcon( KIconLoader::global()->loadIcon( "edit-clear",KIconLoader::NoGroup,48, KIconLoader::DefaultState, QStringList(), 0L, false ) );
-    boxActions.append( aclearBox );
-    connect( aclearBox, SIGNAL( triggered(bool) ), this, SLOT( clearBox() ) );
-    //
-    boxActions.append( anewBox );
-    //
-    QAction *aremoveBox = new QAction(tr("Remove"), this );
-    aremoveBox->setIcon( KIconLoader::global()->loadIcon( "list-remove",KIconLoader::NoGroup,48, KIconLoader::DefaultState, QStringList(), 0L, false ) );
-    boxActions.append( aremoveBox );
-    connect( aremoveBox, SIGNAL( triggered(bool) ), this, SLOT( removeBox() ) );*/
 //
+*/
 
-
-/*void PlasmaFileBoxes::createConfigurationInterface(KConfigDialog *parent)
+void PlasmaFileBoxes::createConfigurationInterface(KConfigDialog *parent)
 {
     QWidget *widget = new QWidget(parent);
     configUi.setupUi(widget);
@@ -110,12 +111,12 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
     layouts << "Vertical" << "Horizontal";
     configUi.comboBox_layout->clear();
     configUi.comboBox_layout->insertItems(0,layouts);
-    configUi.comboBox_layout->setCurrentIndex(m_layout);
+    configUi.comboBox_layout->setCurrentIndex(m_layoutOrientation);
 
     configUi.checkBox_showName->setChecked(m_showName);
 
-}*/
-/*void PlasmaFileBoxes::configAccepted()
+}
+void PlasmaFileBoxes::configAccepted()
 {
     bool changed = false;
     KConfigGroup cg = config();
@@ -125,19 +126,22 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
         cg.writeEntry("showName", m_showName);
         changed = true;
     }
-    if (m_layout != configUi.comboBox_layout->currentIndex())
+    if (m_layoutOrientation != configUi.comboBox_layout->currentIndex())
     {
-        m_layout = configUi.comboBox_layout->currentIndex();
-        cg.writeEntry("layout", m_layout);
+        m_layoutOrientation = configUi.comboBox_layout->currentIndex();
+        cg.writeEntry("layout", m_layoutOrientation);
         changed = true;
     }
     if(changed == true)
     {
-        update();
+        if(m_layoutOrientation == 0)
+            m_layout->setOrientation(Qt::Vertical);
+        else
+            m_layout->setOrientation(Qt::Horizontal);
         emit configNeedsSaving();
     }
 
-}*/
+}
 /*void PlasmaFileBoxes::paintInterface(QPainter *p,const QStyleOptionGraphicsItem *option, const QRect &contentsRect)
 {
     Q_UNUSED(option);
