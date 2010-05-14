@@ -41,8 +41,6 @@
 #include <KUser>
 #include <KDebug>
 #include <KLocale>
-
-
 #include <KIO/Job>
 #include <KIO/NetAccess>
 
@@ -80,6 +78,7 @@ KIO::UDSEntry FileBoxesProtocol::createBox(const QString& boxID)
     //uds.insert( KIO::UDSEntry::UDS_USER, KUser().loginName() );
     uds.insert(KIO::UDSEntry::UDS_TARGET_URL, "fileboxes:/" + boxID);
     uds.insert(KIO::UDSEntry::UDS_SIZE , i18n("%1 items", QString::number(m_backend->boxSize(boxID))));
+    uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, m_backend->boxResUrl(boxID));
     return uds;
 }
 KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
@@ -205,8 +204,21 @@ void FileBoxesProtocol::mimetype(const KUrl& url)
 }
 void FileBoxesProtocol::stat(const KUrl& url)
 {
-    if (parseUrl(url) != 0) {
+    if (parseUrl(url) == 1) {
+         QString boxID = url.path();
+
+        boxID.remove("fileboxes:/");
+        boxID.remove("/");
         
+        KIO::UDSEntry uds;
+        uds.insert(KIO::UDSEntry::UDS_NAME, m_backend->name(boxID));
+        uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, m_backend->name(boxID));
+        uds.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
+        uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/directory"));
+        uds.insert(KIO::UDSEntry::UDS_ICON_NAME, m_backend->icon(boxID));
+        uds.insert(KIO::UDSEntry::UDS_SIZE , i18n("%1 items", QString::number(m_backend->boxSize(boxID))));
+        statEntry( uds );
+        finished();
     } else {
         ForwardingSlaveBase::stat(url);
     }

@@ -26,6 +26,8 @@
 #include <QtCore/QDir>
 #include <kfileitem.h>
 #include <KUrl>
+#include <KDirWatch>
+#include <kdirnotify.h>
 Box::Box(const QString &boxID = "", const QString & name = "Box", const QString & icon = "filebox")
 {
     m_boxID = boxID;
@@ -39,15 +41,22 @@ bool Box::addFiles(const QStringList &files)
     for (int i = 0; i < files.size(); ++i) {
         m_backend.newFile(m_boxID, files.at(i));
     }
+    org::kde::KDirNotify::emitFilesAdded("fileboxes:/"+m_boxID+"/");
     return true;
 }
 bool Box::removeFiles(const QStringList &files)
 {
-    return m_backend.removeFiles(files, m_boxID);
+    bool ret = m_backend.removeFiles(files, m_boxID);
+    org::kde::KDirNotify::emitFilesRemoved(QStringList() << "fileboxes:/"+m_boxID+"/");
+    return ret;
+   
 }
 bool Box::removeAllFiles()
 {
-    return m_backend.removeAllFiles(m_boxID);
+    bool ret = m_backend.removeAllFiles(m_boxID);
+    org::kde::KDirNotify::emitFilesRemoved(QStringList() << "fileboxes:/"+m_boxID+"/");
+    return ret;
+
 }
 QString Box::name()
 {

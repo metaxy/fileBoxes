@@ -55,12 +55,14 @@ public:
     unsigned int boxSize(const QString &boxID);
     QString localPath(QUrl url);
     QUrl localUrl(QUrl url);
+    Nepomuk::Resource boxRes(const QString& boxID);
+    QString boxResUrl(const QString& boxID);
 
     void sync();
 private:
     QSettings *m_settings;
     QString m_fileBoxesHome;
-    Nepomuk::Resource boxRes(const QString& boxID);
+    
 };
 
 #endif

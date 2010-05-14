@@ -83,8 +83,9 @@ void PlasmaFileBoxes::newBoxDialog()
     if (ok && !text.isEmpty()) {
         boxName = text;
     } else {
-        boxName = i18n("Box");
+        QString bID = i18n("Box");
     }
+   
     QString boxID = m_backend->newBox(boxName, "filebox");
     newBox(boxID, boxName, "filebox");
 }

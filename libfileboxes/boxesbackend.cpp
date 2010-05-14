@@ -60,7 +60,6 @@ bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
     b.setLabel(name(boxID));
     
     Resource f(fileName);
-
     f.addProperty(Nepomuk::Vocabulary::NIE::isPartOf(), b);
 
     return true;
@@ -113,15 +112,16 @@ QList<QUrl> BoxesBackend::files(const QString &boxID)
 }
 QString BoxesBackend::newBox(const QString &name, const QString &icon)
 {
-    QStringList childGroups = boxIDs();
-    int max = 0;
-    for (int i = 0; i < childGroups.size(); ++i) {
-        int current = childGroups.at(i).toInt();
-        if (current > max) {
-            max = current;
+    QString boxID = name;
+    if(boxIDs().contains(name)) {
+        for(int i = 1;;i++) {
+             QString n(name + " (" + QString::number(i) + ")");
+             if(!boxIDs().contains(n)) {
+                 boxID = n;
+                 break;
+             }
         }
     }
-    QString boxID = QString::number(max + 1);
     BoxSettings set;
     set.id = boxID;
     set.name = name;
@@ -204,6 +204,11 @@ Nepomuk::Resource BoxesBackend::boxRes(const QString &boxID)
     Resource res(boxUrl);
     return res;
 }
+QString BoxesBackend::boxResUrl(const QString& boxID)
+{
+    return boxRes(boxID).resourceUri().toString();
+}
+
 QString BoxesBackend::localPath(QUrl url)
 {
     Resource f(url);
