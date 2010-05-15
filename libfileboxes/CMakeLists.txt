@@ -2,7 +2,7 @@ find_package(KDE4 REQUIRED)
 find_package(Nepomuk REQUIRED)
 find_package(Soprano REQUIRED)
 include(KDE4Defaults)
- include(SopranoAddOntology)
+include(SopranoAddOntology)
 include_directories (${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${KDE4_INCLUDES} ${NEPOMUK_INCLUDES} ${SOPRANO_INCLUDE_DIR})
 add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
 set( fileboxes_LIB_SRCS
@@ -15,8 +15,9 @@ set( fileboxes_LIB_HDRS
   boxesbackend.h
   boxsettings.h
 )
-#find_file(FILEBOXES_TRIG_SOURCE
-   #fileboxes.trig)
+
+set(FILEBOXES_TRIG_SOURCE
+   /home/kde-devel/c++/fileboxes/libfileboxes/fb.trig)
 #nepomuk_add_ontology_classes(fileboxes_LIB_SRCS ${FILEBOXES_TRIG_SOURCE}  "FILEBOXES"
   # "Nepomuk::Vocabulary"
   #"trig"
@@ -25,6 +26,7 @@ set( fileboxes_LIB_HDRS
 soprano_add_ontology(fileboxes_LIB_SRCS ${SHAREDDESKTOPONTOLOGIES_ROOT_DIR}/nie/nfo.trig "NFO" "Nepomuk::Vocabulary" "trig")
 soprano_add_ontology(fileboxes_LIB_SRCS ${SHAREDDESKTOPONTOLOGIES_ROOT_DIR}/nie/nie.trig "NIE" "Nepomuk::Vocabulary" "trig")
 soprano_add_ontology(fileboxes_LIB_SRCS ${SHAREDDESKTOPONTOLOGIES_ROOT_DIR}/nepomuk/nao.trig "NAO" "Soprano::Vocabulary" "trig")
+soprano_add_ontology(fileboxes_LIB_SRCS ${FILEBOXES_TRIG_SOURCE} "FB" "Nepomuk::Vocabulary" "trig")
 set(GENERIC_LIB_VERSION "0.1")
 set(GENERIC_LIB_SOVERSION "0")
 kde4_add_library( fileboxes SHARED ${fileboxes_LIB_SRCS} )

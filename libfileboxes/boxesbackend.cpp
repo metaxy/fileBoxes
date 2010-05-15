@@ -35,80 +35,29 @@
 #include "nao.h"
 #include "nie.h"
 #include "nfo.h"
+#include "fb.h"
 #include <Soprano/Model>
 #include <Soprano/QueryResultIterator>
 #include <Soprano/Vocabulary/NAO>
 #include <Soprano/Client/DBusClient>
 #include <Soprano/Client/DBusModel>
+#include <KDirWatch>
+#include <kdirnotify.h>
 using namespace Nepomuk;
 BoxesBackend::BoxesBackend()
 {
-    m_fileBoxesHome = QDir::homePath() + "/.fileboxes";
-    m_settings = new QSettings(m_fileBoxesHome + "/files.ini", QSettings::IniFormat);
     Nepomuk::ResourceManager::instance()->init();
-    qDebug() << "Version 0.1.3";
 }
 BoxesBackend::~BoxesBackend()
 {
-    delete m_settings;
 }
-bool BoxesBackend::newFile(const QString &boxID, const QString &fileName)
+bool BoxesBackend::newFile(const QString& fileName, const QString& boxID)
 {
-    qDebug() << " newFile boxID = " << boxID << " fileName = " << fileName;
-    
     Resource b = boxRes(boxID);
-    b.setLabel(name(boxID));
-    
     Resource f(fileName);
-    f.addProperty(Nepomuk::Vocabulary::NIE::isPartOf(), b);
+    f.addProperty(Nepomuk::Vocabulary::FB::isPartOfFileBox(), b);
 
     return true;
-}
-bool BoxesBackend::removeFile(const QString &fileName, const QString &boxID)
-{
-    Resource f(fileName);
-    f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
-    return true;
-}
-bool BoxesBackend::removeFiles(const QStringList &files, const QString &boxID)
-{
-    for (int i = 0; i < files.size(); ++i) {
-        removeFile(files.at(i), boxID);
-    }
-    return true;
-}
-bool BoxesBackend::removeAllFiles(const QString &boxID)
-{
-    Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
-    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::NIE::isPartOf(),
-                                        partTerm,
-                                        Nepomuk::Query::ComparisonTerm::Equal);
-    Nepomuk::Query::Query query(term);
-    QString q = query.toSparqlQuery();
-    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery(q, Soprano::Query::QueryLanguageSparql);
-    while (it.next()) {
-        Resource f(it.binding(0).uri());
-        f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
-    }
-    return true;
-}
-QList<QUrl> BoxesBackend::files(const QString &boxID)
-{
-    qDebug() << "files";
-    Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
-    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::NIE::isPartOf(),
-                                        partTerm,
-                                        Nepomuk::Query::ComparisonTerm::Equal);
-    Nepomuk::Query::Query query(term);
-    QString q = query.toSparqlQuery();
-    qDebug() << q;
-    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery(q, Soprano::Query::QueryLanguageSparql);
-    QList<QUrl> urls;
-    while (it.next()) {
-        Resource f(it.binding(0).uri());
-        urls << it.binding(0).uri();
-    }
-    return urls;
 }
 QString BoxesBackend::newBox(const QString &name, const QString &icon)
 {
@@ -122,80 +71,139 @@ QString BoxesBackend::newBox(const QString &name, const QString &icon)
              }
         }
     }
-    BoxSettings set;
-    set.id = boxID;
-    set.name = name;
-    set.icon = icon;
-    set.hasNew = false;
-    setSettings(boxID, set);
+    Resource boxR = boxRes(boxID);
+    boxR.setLabel(name);
+   // boxR.setTypes();
+    boxR.addProperty(Nepomuk::Vocabulary::FB::isFileBoxIn(), fileBoxesRes());
+    boxR.addProperty(Nepomuk::Vocabulary::FB::hasNewFiles(), "no");
+    boxR.addProperty(Nepomuk::Vocabulary::FB::boxID(), boxID);
+    boxR.addProperty(Soprano::Vocabulary::NAO::iconName() , icon);
+    org::kde::KDirNotify::emitFilesAdded("fileboxes:/");
 
     return boxID;
 }
+
+bool BoxesBackend::removeFile(const QString &fileName, const QString &boxID)
+{
+    Resource f(fileName);
+    //f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
+    f.removeProperty(Nepomuk::Vocabulary::FB::isPartOfFileBox(), boxRes(boxID));
+    return true;
+}
+bool BoxesBackend::removeFiles(const QStringList &files, const QString &boxID)
+{
+    for (int i = 0; i < files.size(); ++i) {
+        removeFile(files.at(i), boxID);
+    }
+    return true;
+}
+bool BoxesBackend::removeAllFiles(const QString &boxID)
+{
+    Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
+    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::FB::isPartOfFileBox(),
+                                        partTerm,
+                                        Nepomuk::Query::ComparisonTerm::Equal);
+    Nepomuk::Query::Query query(term);
+    QString q = query.toSparqlQuery();
+    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery(q, Soprano::Query::QueryLanguageSparql);
+    while (it.next()) {
+        Resource f(it.binding(0).uri());
+        f.removeProperty(Nepomuk::Vocabulary::FB::isPartOfFileBox(), boxRes(boxID));
+    }
+    return true;
+}
+QList<QUrl> BoxesBackend::files(const QString &boxID)
+{
+    Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
+    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::FB::isPartOfFileBox(),
+                                        partTerm,
+                                        Nepomuk::Query::ComparisonTerm::Equal);
+    Nepomuk::Query::Query query(term);
+    QString q = query.toSparqlQuery();
+    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery(q, Soprano::Query::QueryLanguageSparql);
+    QList<QUrl> urls;
+    while (it.next()) {
+        Resource f(it.binding(0).uri());
+        urls << it.binding(0).uri();
+    }
+    return urls;
+}
+
+
 QStringList BoxesBackend::boxIDs()
 {
-    return m_settings->childGroups();
+    Nepomuk::Query::ResourceTerm partTerm(fileBoxesRes());
+    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::FB::isFileBoxIn(),
+                                        partTerm,
+                                        Nepomuk::Query::ComparisonTerm::Equal);
+    Nepomuk::Query::Query query(term);
+    QString q = query.toSparqlQuery();
+    qDebug() << q;
+    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery(q, Soprano::Query::QueryLanguageSparql);
+    QStringList list;
+    while (it.next()) {
+        Resource f(it.binding(0).uri());
+        list << f.property( Nepomuk::Vocabulary::FB::boxID() ).toString();
+    }
+    return list;
+
 }
 QStringList BoxesBackend::boxNames()
 {
-    QStringList id = boxIDs();
-    QStringList ret;
-    for (int i = 0; i < id.size(); ++i) {
-        ret << name(id.at(i));
+    Nepomuk::Query::ResourceTerm partTerm(fileBoxesRes());
+    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::FB::isFileBoxIn(),
+                                       partTerm,
+                                        Nepomuk::Query::ComparisonTerm::Equal);
+    Nepomuk::Query::Query query(term);
+    QString q = query.toSparqlQuery();
+    qDebug() << q;
+    Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery(q, Soprano::Query::QueryLanguageSparql);
+    QStringList list;
+    while (it.next()) {
+        Resource f(it.binding(0).uri());
+        list << f.label();
     }
-    return ret;
+    return list;
 }
 
 QString BoxesBackend::name(const QString &boxID)
 {
-    return settings(boxID).name;
+    Resource boxR = boxRes(boxID);
+    QString label = boxR.label();
+    qDebug() << "boxID = " << boxID << " label = " << label;
+    return label;
 }
+
 QString BoxesBackend::icon(const QString &boxID)
 {
-    return settings(boxID).icon;
+    Resource boxR = boxRes(boxID);
+    QString icon = boxR.property( Soprano::Vocabulary::NAO::iconName() ).toString();
+    qDebug() << "boxID = " << boxID << " icon = " << icon;
+    return icon;
 }
+
 bool BoxesBackend::hasNew(const QString &boxID)
 {
-    return settings(boxID).hasNew;
+    Resource boxR = boxRes(boxID);
+    return boxR.property( Nepomuk::Vocabulary::FB::hasNewFiles() ).toBool();
 }
 void BoxesBackend::setHasNew(const bool &hasNew, const QString &boxID)
 {
-    BoxSettings set = settings(boxID);
-    set.hasNew = hasNew;
-    setSettings(boxID, set);
+    Resource boxR = boxRes(boxID);
+    boxR.addProperty(Nepomuk::Vocabulary::FB::hasNewFiles(), hasNew);
 }
-struct BoxSettings BoxesBackend::settings(const QString &boxID) {
-    BoxSettings set;
-    m_settings->beginGroup(boxID);
-    set.id = boxID;
-    set.name = m_settings->value("name").toString();
-    set.icon = m_settings->value("icon").toString();
-    set.hasNew = m_settings->value("hasNew").toBool();
-    m_settings->endGroup();
-    return set;
-}
-bool BoxesBackend::setSettings(const QString &boxID, const struct BoxSettings &set)
-{
-    m_settings->beginGroup(boxID);
-    m_settings->setValue("name", set.name);
-    m_settings->setValue("icon", set.icon);
-    m_settings->setValue("hasNew", set.hasNew);
-    m_settings->endGroup();
-    //sync();
-    return false;
-}
+
 unsigned int BoxesBackend::boxSize(const QString &boxID)
 {
     return files(boxID).size();
 }
-
 bool BoxesBackend::removeBox(const QString &boxID)
 {
     removeAllFiles(boxID);
-    m_settings->remove(boxID);
-}
-void BoxesBackend::sync()
-{
-    m_settings->sync();
+    Resource boxR = boxRes(boxID);
+    boxR.removeProperty(Nepomuk::Vocabulary::FB::isFileBoxIn(),fileBoxesRes());
+    boxR.remove();
+    org::kde::KDirNotify::emitFilesRemoved(QStringList() << "fileboxes:/"+boxID << fileBoxesRes().resourceUri().toString());
 }
 
 Nepomuk::Resource BoxesBackend::boxRes(const QString &boxID)
@@ -204,11 +212,17 @@ Nepomuk::Resource BoxesBackend::boxRes(const QString &boxID)
     Resource res(boxUrl);
     return res;
 }
+const Nepomuk::Resource BoxesBackend::fileBoxesRes()
+{
+    QUrl boxesUrl("fileboxes:/");
+    Resource res(boxesUrl);
+    res.setLabel("fileboxes");
+    return res;
+}
 QString BoxesBackend::boxResUrl(const QString& boxID)
 {
     return boxRes(boxID).resourceUri().toString();
 }
-
 QString BoxesBackend::localPath(QUrl url)
 {
     Resource f(url);

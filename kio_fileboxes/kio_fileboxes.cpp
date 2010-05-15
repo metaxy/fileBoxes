@@ -67,15 +67,11 @@ int FileBoxesProtocol::parseUrl(const KUrl& url)
 KIO::UDSEntry FileBoxesProtocol::createBox(const QString& boxID)
 {
     KIO::UDSEntry uds;
-    uds.insert(KIO::UDSEntry::UDS_NAME, m_backend->name(boxID));
+    uds.insert(KIO::UDSEntry::UDS_NAME, boxID);
     uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, m_backend->name(boxID));
     uds.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
     uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/directory"));
     uds.insert(KIO::UDSEntry::UDS_ICON_NAME, m_backend->icon(boxID));
-    //  uds.insert( KIO::UDSEntry::UDS_MODIFICATION_TIME, dt.toTime_t() );
-    //  uds.insert( KIO::UDSEntry::UDS_CREATION_TIME, dt.toTime_t() );
-    uds.insert(KIO::UDSEntry::UDS_ACCESS, 0700);
-    //uds.insert( KIO::UDSEntry::UDS_USER, KUser().loginName() );
     uds.insert(KIO::UDSEntry::UDS_TARGET_URL, "fileboxes:/" + boxID);
     uds.insert(KIO::UDSEntry::UDS_SIZE , i18n("%1 items", QString::number(m_backend->boxSize(boxID))));
     uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, m_backend->boxResUrl(boxID));
@@ -83,16 +79,11 @@ KIO::UDSEntry FileBoxesProtocol::createBox(const QString& boxID)
 }
 KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
 {
-    //QString localPath = m_backend->localPath(url);
-    //
     KIO::UDSEntry uds;
     if ( KIO::StatJob* job = KIO::stat( url, KIO::HideProgressInfo ) ) {
         job->setAutoDelete( false );
         if ( KIO::NetAccess::synchronousRun( job, 0 ) ) {
             uds = job->statResult();
-        }
-        else {
-            //kDebug() << "failed to stat" << url;
         }
         delete job;
     }
@@ -115,19 +106,21 @@ KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
     if (ort.startsWith(QDir::homePath())) {
         ort.remove(0,QDir::homePath().size()+1);
     }
+    
     if (localPath == QDir::homePath()+"/"+item.name()) {
         ort = QDir::homePath();
     }
+    
     if (ort.endsWith(item.name())) {
         ort.remove(ort.size()-item.name().size()-1,item.name().size()+1);
     }
+    
     if (ort == "" || ort == "/") {
         uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
     }
     else {
         uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name()+"\n"+ort);
     }
-
 
     QString mimetype = uds.stringValue( KIO::UDSEntry::UDS_MIME_TYPE );
     if ( mimetype.isEmpty() ) {
@@ -139,26 +132,6 @@ KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
         uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
         uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
     }
-/*
-    uds.insert(KIO::UDSEntry::UDS_SIZE , item.size());
-    uds.insert(KIO::UDSEntry::UDS_USER , item.user());
-    uds.insert(KIO::UDSEntry::UDS_GROUP , item.group());
-    uds.insert(KIO::UDSEntry::UDS_ACCESS , item.permissions());
-    uds.insert(KIO::UDSEntry::UDS_MODIFICATION_TIME , item.time(KFileItem::ModificationTime).toTime_t());
-    uds.insert(KIO::UDSEntry::UDS_ACCESS_TIME , item.time(KFileItem::AccessTime).toTime_t());
-    uds.insert(KIO::UDSEntry::UDS_CREATION_TIME , item.time(KFileItem::CreationTime).toTime_t());
-    uds.insert(KIO::UDSEntry::UDS_MIME_TYPE , item.determineMimeType());
-    uds.insert(KIO::UDSEntry::UDS_NAME, item.name());
-    //uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
-    uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString());
-    
-    uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
-    uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
-    uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
-    uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
-    uds.insert(KIO::UDSEntry::UDS_LINK_DEST, localPath);*/
-    
-
     return uds;
 }
 void FileBoxesProtocol::listDir(const KUrl& url)
@@ -172,7 +145,6 @@ void FileBoxesProtocol::listDir(const KUrl& url)
         listEntry(KIO::UDSEntry(), true);
         finished();
     } else {
-        //show files
         QString boxID = url.path();
 
         boxID.remove("fileboxes:/");
@@ -190,7 +162,11 @@ void FileBoxesProtocol::listDir(const KUrl& url)
 }
 void FileBoxesProtocol::del(const KUrl& url, bool isfile)
 {
-    //  m_backend->removeFile(QUrl(url.url()));
+     /*QString boxID = url.path();
+     boxID.remove("fileboxes:/");
+     boxID.remove(boxID.indexOf("/"),boxID.size());
+     
+     m_backend->removeFile(QUrl(url.url()));*/
 }
 void FileBoxesProtocol::put(const KUrl& url, int permissions, KIO::JobFlags flags)
 {
@@ -205,13 +181,12 @@ void FileBoxesProtocol::mimetype(const KUrl& url)
 void FileBoxesProtocol::stat(const KUrl& url)
 {
     if (parseUrl(url) == 1) {
-         QString boxID = url.path();
-
+        QString boxID = url.path();
         boxID.remove("fileboxes:/");
         boxID.remove("/");
         
         KIO::UDSEntry uds;
-        uds.insert(KIO::UDSEntry::UDS_NAME, m_backend->name(boxID));
+        uds.insert(KIO::UDSEntry::UDS_NAME, boxID);
         uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, m_backend->name(boxID));
         uds.insert(KIO::UDSEntry::UDS_FILE_TYPE, S_IFDIR);
         uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/directory"));
@@ -230,13 +205,6 @@ void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry& entry,
 }
 bool FileBoxesProtocol::rewriteUrl(const KUrl& url, KUrl& newURL)
 {
-  /*  if (parseUrl(url) != 0) {
-        QString urla = url.toLocalFile();
-        urla.remove("fileboxes:/");
-        urla.remove(0,urla.indexOf('/'));
-        newURL.setPath("file:///home/paul");
-        return true;
-    }*/
     return false;
 }
 

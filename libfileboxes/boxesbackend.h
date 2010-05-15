@@ -31,7 +31,7 @@ class FILEBOXES_EXPORT BoxesBackend
 public:
     BoxesBackend();
     ~BoxesBackend();
-    bool newFile(const QString &boxID, const QString &fileName);
+    bool newFile(const QString &fileName,const QString &boxID);
     QString newBox(const QString &fileName, const QString &icon);
 
     bool removeBox(const QString &boxID);
@@ -42,10 +42,6 @@ public:
     QStringList boxIDs();
     QStringList boxNames();
     QList<QUrl> files(const QString &boxID);
-
-
-    bool setSettings(const QString &boxID, const BoxSettings &set);
-    struct BoxSettings settings(const QString &boxID);
 
     QString name(const QString &boxID);
     QString icon(const QString &boxID);
@@ -58,10 +54,8 @@ public:
     Nepomuk::Resource boxRes(const QString& boxID);
     QString boxResUrl(const QString& boxID);
 
-    void sync();
 private:
-    QSettings *m_settings;
-    QString m_fileBoxesHome;
+    const Nepomuk::Resource fileBoxesRes();
     
 };
 

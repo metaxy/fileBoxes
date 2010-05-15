@@ -2,4 +2,18 @@ fileboxes - a new way of managing files
 
 how to install:
 
-sh install.sh
+first install libfileboxes:
+    cd [your_path_to_source]
+    cd libfileboxes
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix` ..
+    make
+    make install
+and than the other stuff:
+    cd [your_path_to_source]
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix` ..
+    make
+    make install
