@@ -20,7 +20,7 @@ PlasmaFileBoxes::PlasmaFileBoxes(QObject *parent, const QVariantList &args)
 
     setHasConfigurationInterface(true);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
-    setAcceptDrops(true);
+    //setAcceptDrops(true);
     resize(200, 200);
     m_backend = new BoxesBackend();
 

@@ -109,6 +109,7 @@ bool BoxesBackend::removeAllFiles(const QString &boxID)
 }
 QList<QUrl> BoxesBackend::files(const QString &boxID)
 {
+    qDebug() << "fileboxes files = " << boxID;
     Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
     Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::FB::isPartOfFileBox(),
                                         partTerm,
@@ -185,6 +186,7 @@ bool BoxesBackend::hasNew(const QString &boxID)
 void BoxesBackend::setHasNew(const bool &hasNew, const QString &boxID)
 {
     Resource boxR = boxRes(boxID);
+	boxR.removeProperty(Nepomuk::Vocabulary::FB::hasNewFiles(), !hasNew);
     boxR.addProperty(Nepomuk::Vocabulary::FB::hasNewFiles(), hasNew);
 }
 
@@ -213,9 +215,11 @@ const Nepomuk::Resource BoxesBackend::fileBoxesRes()
     Resource res(boxesUrl);
     res.setLabel("fileboxes");
     return res;
+    
 }
 QString BoxesBackend::boxResUrl(const QString& boxID)
 {
+    qDebug() << "boxresUrl = " << boxRes(boxID).resourceUri().toString();
     return boxRes(boxID).resourceUri().toString();
 }
 QString BoxesBackend::localPath(QUrl url)
