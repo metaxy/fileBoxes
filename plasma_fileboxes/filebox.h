@@ -11,8 +11,8 @@ class FileBox : public QGraphicsWidget
 public slots:
     void removeBox();
 public:
-    FileBox(QGraphicsLinearLayout *parent, const QString boxID, const QString name, const QString icon, BoxesBackend* backend);
-      FileBoxIcon *m_fileBoxIcon;
+    FileBox(QGraphicsLinearLayout *parent, const QString boxID, const QString name, const QString icon, BoxesBackend* backend, bool showName);
+    FileBoxIcon *m_fileBoxIcon;
 protected:
 
 

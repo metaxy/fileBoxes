@@ -162,14 +162,24 @@ void FileBoxesProtocol::listDir(const KUrl& url)
 }
 void FileBoxesProtocol::del(const KUrl& url, bool isfile)
 {
-     /*QString boxID = url.path();
-     boxID.remove("fileboxes:/");
-     boxID.remove(boxID.indexOf("/"),boxID.size());
-     
-     m_backend->removeFile(QUrl(url.url()));*/
+    qDebug() << "fileboxes del " << url;
+    qDebug() << "fileboxes del " << url.path(); 
+    QString boxID = url.path();
+    boxID.remove(0,1);
+    boxID.remove(boxID.indexOf("/"),boxID.size());
+    qDebug() << "fileboxes boxID = " << boxID;
+    
+    QString f = url.path();
+    f.remove(0,f.lastIndexOf("/")+1);
+    f.replace("nepomuk_3A_2Fres_2F","nepomuk:/res/");
+    qDebug() << "fileboxes f = " << f;
+    m_backend->removeFile(f,boxID);
+    finished();
 }
 void FileBoxesProtocol::put(const KUrl& url, int permissions, KIO::JobFlags flags)
 {
+    qDebug() << "filebxoes *** "  << url;
+    //flags.
     //todo: only if in box
     //find out box id and add file
     //m_back

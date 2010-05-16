@@ -2,8 +2,9 @@
 
 #include <plasma/widgets/label.h>
 
-FileBox::FileBox(QGraphicsLinearLayout *parent, const QString boxID, const QString name, const QString icon, BoxesBackend* backend) : QGraphicsWidget()
+FileBox::FileBox(QGraphicsLinearLayout* parent, const QString boxID, const QString name, const QString icon, BoxesBackend* backend, bool showName) : QGraphicsWidget()
 {
+    qDebug() << "New File Box";
     setAcceptDrops(true);
     setAcceptHoverEvents(true);
     setAcceptsHoverEvents(true);
@@ -23,12 +24,14 @@ FileBox::FileBox(QGraphicsLinearLayout *parent, const QString boxID, const QStri
     //_______________________________________
     m_fileBoxIcon = new FileBoxIcon(boxID, name, icon);
     connect(m_fileBoxIcon,SIGNAL(removeB()),this,SLOT(removeBox()));
-    m_fileBoxIcon->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    m_fileBoxIcon->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
     m_layout->addItem(m_fileBoxIcon);
-
-    Plasma::Label *label = new Plasma::Label();
-    label->setText(m_name);
-    m_layout->addItem(label);
+    if(showName) {
+        qDebug() << "show Name true";
+        Plasma::Label *label = new Plasma::Label();
+        label->setText(m_name);
+        m_layout->addItem(label);
+    }
 
 }
 

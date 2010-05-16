@@ -1,5 +1,5 @@
 /********************************************************************************
-** Copyright 2009 Paul Walger metaxy@walger.name
+** Copyright 2009-2010 Paul Walger metaxy@walger.name
 **
 ** This library is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU Lesser General Public

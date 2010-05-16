@@ -18,20 +18,13 @@
 ** License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 *********************************************************************************/
 #include "boxesbackend.h"
-#include <QtCore/QCryptographicHash>
-#include <QtCore/QFileInfo>
-#include <QtCore/QFile>
-#include <QtCore/QTextStream>
-#include <QtCore/QDir>
 #include <QtCore/QtDebug>
 #include <Nepomuk/ResourceManager>
 #include <Nepomuk/Variant>
-#include <Nepomuk/Tag>
 #include <nepomuk/query.h>
 #include <nepomuk/resourceterm.h>
 #include <nepomuk/comparisonterm.h>
 #include <nepomuk/literalterm.h>
-#include <nepomuk/resourcetypeterm.h>
 #include "nao.h"
 #include "nie.h"
 #include "nfo.h"
@@ -39,8 +32,6 @@
 #include <Soprano/Model>
 #include <Soprano/QueryResultIterator>
 #include <Soprano/Vocabulary/NAO>
-#include <Soprano/Client/DBusClient>
-#include <Soprano/Client/DBusModel>
 #include <KDirWatch>
 #include <kdirnotify.h>
 using namespace Nepomuk;
@@ -85,7 +76,11 @@ QString BoxesBackend::newBox(const QString &name, const QString &icon)
 
 bool BoxesBackend::removeFile(const QString &fileName, const QString &boxID)
 {
+    KUrl u(fileName);
+    QString n = QString::fromAscii( u.toEncoded().toPercentEncoding( QByteArray(), QByteArray(""), '_' ) ); 
     Resource f(fileName);
+    org::kde::KDirNotify::emitFilesRemoved(QStringList() << "fileboxes:/"+boxID+"/"+n);
+
     //f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
     f.removeProperty(Nepomuk::Vocabulary::FB::isPartOfFileBox(), boxRes(boxID));
     return true;

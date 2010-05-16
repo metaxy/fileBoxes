@@ -11,6 +11,7 @@
 #include <QStandardItemModel>
 #include <QPointF>
 #include "ui_fileBoxesConfig.h"
+#include "filebox.h"
 #include <fileboxes/boxesbackend.h>
 #include <KConfigDialog>
 class QSizeF;
@@ -39,8 +40,10 @@ private:
 
     BoxesBackend *m_backend;
     QGraphicsLinearLayout *m_layout;
+    QList<FileBox*> boxes;
     int m_layoutOrientation;
     bool m_showName;
+    void loadBoxes();
 
 public slots:
     void newBoxDialog();
