@@ -11,7 +11,7 @@ class FileBoxIcon : public Plasma::ToolButton
 public:
     FileBoxIcon(const QString& boxID, const QString& name, const QString& icon);
     void resizeEvent(QGraphicsSceneResizeEvent *event);
-    void updateIcon();
+    void updateIcon(bool reloadSize=false);
 protected:
     void dropEvent(QGraphicsSceneDragDropEvent *event);
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
@@ -36,8 +36,9 @@ signals:
 private:
     Box *m_box;
     QString m_icon;
-    void setFileBoxIcon(const QString &icon);
+    void setFileBoxIcon(const QString& iconName, bool reloadSize=false);
     QPointF dragStartPosition;
+    unsigned int m_size;
 };
 
 #endif // FILEBOXICON_H

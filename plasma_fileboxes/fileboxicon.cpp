@@ -25,14 +25,15 @@ FileBoxIcon::FileBoxIcon(const QString &boxID, const QString &name, const QStrin
 
     m_box = new Box(boxID, name, icon);
     m_icon = icon;
-    setFileBoxIcon(m_icon);
+    setFileBoxIcon(m_icon,true);
+    connect(this,SIGNAL(clicked()),this,SLOT(openBoxInNewTab()));
 
 }
-void FileBoxIcon::updateIcon()
+void FileBoxIcon::updateIcon(bool reloadSize)
 {
-    setFileBoxIcon(m_icon);
+    setFileBoxIcon(m_icon,reloadSize);
 }
-void FileBoxIcon::setFileBoxIcon(const QString &iconName)
+void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
 {
     QColor noNew(69, 147, 219, 255);//blue
     QColor areNew(102, 219, 67, 255);//green
@@ -71,7 +72,10 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName)
     QPen textPen(Qt::black, 1);
     p.setPen(textPen);
     p.setBrush(Qt::NoBrush);
-    p.drawText(circle, Qt::AlignCenter, QString::number(m_box->size()));
+    if(reloadSize) {
+        m_size = m_box->size();
+    }
+    p.drawText(circle, Qt::AlignCenter, QString::number(m_size));
 
     setIcon(pm);
 }
@@ -104,7 +108,7 @@ void FileBoxIcon::dropEvent(QGraphicsSceneDragDropEvent *event)
         if (files.size() > 0) {
             m_box->addFiles(files);
             m_box->setHasNew(true);
-            updateIcon();
+            updateIcon(true);
         }
     }
     event->acceptProposedAction();
@@ -187,29 +191,15 @@ void FileBoxIcon::openBoxInNewWindow()
 void FileBoxIcon::openBoxInNewTab()
 {
     qDebug() << "new tab";
-  /*  
-    int id = 1;
-    QStringList list;
-    while(true) {
-        QDBusInterface remoteApp( "org.kde.dolphin", "/dolphin/Dolphin_"+QString::number(id),
-                           "org.kde.dolphin.MainWindow" );
-        if(remoteApp.isValid()) {
-            list << "Dolphin_"+QString::number(id);
-            qDebug() << QString::number(id) <<  remoteApp.connection().
-           
-        }
-        else {
-            break;
-        }
-        id++;
-    }
-    qDebug() << list;*/
-  
     QDBusMessage listOfD = QDBusMessage::createMethodCall("org.kde.dolphin",
                                                "/dolphin",
                                                "org.freedesktop.DBus.Introspectable",
                                                "Introspect");
     QDBusMessage listOfDRes = QDBusConnection::sessionBus().call(listOfD);
+    if(listOfDRes.arguments().size() == 0) {
+         openBoxInNewWindow();
+         return;
+    }
     QString xml = listOfDRes.arguments().at(0).toString();
     QString search = "Dolphin_";
     int next = xml.indexOf(search);
@@ -316,11 +306,12 @@ void FileBoxIcon::createArchive()
     }
     myProcess->start("ark", QStringList() << "-c" << "-d" << files);
     m_box->setHasNew(false);
+    updateIcon();
 }
 void FileBoxIcon::clearBox()
 {
     m_box->removeAllFiles();
-    updateIcon();
+    updateIcon(true);
 }
 void FileBoxIcon::removeBox()
 {

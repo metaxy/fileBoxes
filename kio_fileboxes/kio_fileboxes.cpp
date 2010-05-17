@@ -206,7 +206,7 @@ void FileBoxesProtocol::stat(const KUrl& url)
         finished();
     } else {
         ForwardingSlaveBase::stat(url);
-    }
+   }
 }
 void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry& entry,
                                         bool listing) const
