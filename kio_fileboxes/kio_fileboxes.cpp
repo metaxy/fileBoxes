@@ -80,57 +80,57 @@ KIO::UDSEntry FileBoxesProtocol::createBox(const QString& boxID)
 KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
 {
     KIO::UDSEntry uds;
-    if ( KIO::StatJob* job = KIO::stat( url, KIO::HideProgressInfo ) ) {
-        job->setAutoDelete( false );
-        if ( KIO::NetAccess::synchronousRun( job, 0 ) ) {
+    if (KIO::StatJob* job = KIO::stat(url, KIO::HideProgressInfo)) {
+        job->setAutoDelete(false);
+        if (KIO::NetAccess::synchronousRun(job, 0)) {
             uds = job->statResult();
         }
         delete job;
     }
     QUrl localUrl = m_backend->localUrl(url);
     QString localPath = localUrl.toLocalFile();
-    KUrl fileUrl( localUrl );
-    if ( uds.isDir() ) {
-        uds.insert( KIO::UDSEntry::UDS_URL, fileUrl.url());
-   }
-// 
-    if ( fileUrl.isLocalFile() ) {
-        uds.insert( KIO::UDSEntry::UDS_LOCAL_PATH, fileUrl.toLocalFile() );
+    KUrl fileUrl(localUrl);
+    if (uds.isDir()) {
+        uds.insert(KIO::UDSEntry::UDS_URL, fileUrl.url());
     }
-    uds.insert( KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString() );
+//
+    if (fileUrl.isLocalFile()) {
+        uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, fileUrl.toLocalFile());
+    }
+    uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString());
     KUrl u(url);
-    uds.insert( KIO::UDSEntry::UDS_NAME,  QString::fromAscii( u.toEncoded().toPercentEncoding( QByteArray(), QByteArray(""), '_' ) ) );
+    uds.insert(KIO::UDSEntry::UDS_NAME,  QString::fromAscii(u.toEncoded().toPercentEncoding(QByteArray(), QByteArray(""), '_')));
 
-   
+
     KFileItem item(KFileItem::Unknown, KFileItem::Unknown, KUrl(localPath), false);
-   /* QString ort = localPath;
-    if (ort.startsWith(QDir::homePath())) {
-        ort.remove(0,QDir::homePath().size()+1);
-    }
-    
-    if (localPath == QDir::homePath()+"/"+item.name()) {
-        ort = QDir::homePath();
-    }
-    
-    if (ort.endsWith(item.name())) {
-        ort.remove(ort.size()-item.name().size()-1,item.name().size()+1);
-    }
-    
-    if (ort == "" || ort == "/") {
-        uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
-    }
-    else {
-        uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name()+"\n"+ort);
-    }
-*/
-     uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
-    QString mimetype = uds.stringValue( KIO::UDSEntry::UDS_MIME_TYPE );
-    if ( mimetype.isEmpty() ) {
+    /* QString ort = localPath;
+     if (ort.startsWith(QDir::homePath())) {
+         ort.remove(0,QDir::homePath().size()+1);
+     }
+
+     if (localPath == QDir::homePath()+"/"+item.name()) {
+         ort = QDir::homePath();
+     }
+
+     if (ort.endsWith(item.name())) {
+         ort.remove(ort.size()-item.name().size()-1,item.name().size()+1);
+     }
+
+     if (ort == "" || ort == "/") {
+         uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
+     }
+     else {
+         uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name()+"\n"+ort);
+     }
+    */
+    uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
+    QString mimetype = uds.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
+    if (mimetype.isEmpty()) {
         mimetype = KMimeType::findByUrl(fileUrl)->name();
-        uds.insert( KIO::UDSEntry::UDS_MIME_TYPE, mimetype );
+        uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, mimetype);
     }
-  
-   if(item.isFile()) {
+
+    if (item.isFile()) {
         uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
         uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
         uds.insert(KIO::UDSEntry::UDS_LINK_DEST, localPath);
@@ -166,20 +166,20 @@ void FileBoxesProtocol::listDir(const KUrl& url)
 void FileBoxesProtocol::del(const KUrl& url, bool isfile)
 {
     QString boxID = url.path();
-    boxID.remove(0,1);
-    boxID.remove(boxID.indexOf("/"),boxID.size());
+    boxID.remove(0, 1);
+    boxID.remove(boxID.indexOf("/"), boxID.size());
 
-    
+
     QString f = url.path();
-    f.remove(0,f.lastIndexOf("/")+1);
-    f.replace("nepomuk_3A_2Fres_2F","nepomuk:/res/");
+    f.remove(0, f.lastIndexOf("/") + 1);
+    f.replace("nepomuk_3A_2Fres_2F", "nepomuk:/res/");
 
-    m_backend->removeFile(f,boxID);
+    m_backend->removeFile(f, boxID);
     finished();
 }
 void FileBoxesProtocol::put(const KUrl& url, int permissions, KIO::JobFlags flags)
 {
-  //and how should i know where the file is from???
+    //and how should i know where the file is from???
     const QString dest_orig = url.toLocalFile();
     qDebug() << "fileboxes "  << url.path()  << dest_orig;
     finished();
@@ -192,9 +192,9 @@ void FileBoxesProtocol::stat(const KUrl& url)
 {
     if (parseUrl(url) == 1) {
         QString boxID = url.path();
-        boxID.remove(0,1);
-        boxID.remove(boxID.indexOf("/"),boxID.size());
-        
+        boxID.remove(0, 1);
+        boxID.remove(boxID.indexOf("/"), boxID.size());
+
         KIO::UDSEntry uds;
         uds.insert(KIO::UDSEntry::UDS_NAME, boxID);
         uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, m_backend->name(boxID));
@@ -202,11 +202,11 @@ void FileBoxesProtocol::stat(const KUrl& url)
         uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, QString::fromLatin1("inode/directory"));
         uds.insert(KIO::UDSEntry::UDS_ICON_NAME, m_backend->icon(boxID));
         uds.insert(KIO::UDSEntry::UDS_SIZE , i18n("%1 items", QString::number(m_backend->boxSize(boxID))));
-        statEntry( uds );
+        statEntry(uds);
         finished();
     } else {
         ForwardingSlaveBase::stat(url);
-   }
+    }
 }
 void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry& entry,
                                         bool listing) const
@@ -215,7 +215,7 @@ void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry& entry,
 }
 bool FileBoxesProtocol::rewriteUrl(const KUrl& url, KUrl& newURL)
 {
-  return false;
+    return false;
 }
 
 extern "C" int KDE_EXPORT kdemain(int argc, char **argv)

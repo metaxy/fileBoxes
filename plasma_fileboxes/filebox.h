@@ -7,7 +7,7 @@
 #include "fileboxicon.h"
 class FileBox : public QGraphicsWidget
 {
-     Q_OBJECT
+    Q_OBJECT
 public slots:
     void removeBox();
 public:
@@ -24,7 +24,7 @@ private:
     Box *m_box;
     QGraphicsLinearLayout* m_layout;
     QPoint dragStartPosition;
-  
+
 };
 
 #endif // FILEBOX_H

@@ -31,7 +31,7 @@ class FILEBOXES_EXPORT BoxesBackend
 public:
     BoxesBackend();
     ~BoxesBackend();
-    bool newFile(const QString &fileName,const QString &boxID);
+    bool newFile(const QString &fileName, const QString &boxID);
     QString newBox(const QString &fileName, const QString &icon);
 
     bool removeBox(const QString &boxID);
@@ -56,7 +56,7 @@ public:
 
 private:
     const Nepomuk::Resource fileBoxesRes();
-    
+
 };
 
 #endif

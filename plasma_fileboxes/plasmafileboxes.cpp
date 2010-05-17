@@ -41,14 +41,14 @@ void PlasmaFileBoxes::init()
     this->setLayout(m_layout);
     m_layout->setContentsMargins(0, 0, 0, 0);
     m_layout->setSpacing(0);
-    m_layout->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+    m_layout->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     loadBoxes();
 }
 void PlasmaFileBoxes::loadBoxes()
 {
     qDebug() << "laod";
 
-    if(m_layoutOrientation == 0)
+    if (m_layoutOrientation == 0)
         m_layout->setOrientation(Qt::Vertical);
     else
         m_layout->setOrientation(Qt::Horizontal);
@@ -65,16 +65,16 @@ void PlasmaFileBoxes::loadBoxes()
 void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
 {
     qDebug() << "new Box";
-    FileBox *box =  new FileBox(m_layout, boxID, name, icon, m_backend,m_showName);
-    box->setContentsMargins(0,0,0,0);
-    connect(box->m_fileBoxIcon,SIGNAL(newBoxDialog()),this,SLOT(newBoxDialog()));
+    FileBox *box =  new FileBox(m_layout, boxID, name, icon, m_backend, m_showName);
+    box->setContentsMargins(0, 0, 0, 0);
+    connect(box->m_fileBoxIcon, SIGNAL(newBoxDialog()), this, SLOT(newBoxDialog()));
     box->setObjectName("box_" + boxID);
-    box->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+    box->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     m_layout->addItem(box);
     boxes << box;
-    
-  
-   
+
+
+
 
 }
 
@@ -84,13 +84,13 @@ void PlasmaFileBoxes::newBoxDialog()
     bool ok;
     QString boxName;
     QString name = i18n("Box");
-    if(m_backend->boxIDs().contains(name)) {
-        for(int i = 1;;i++) {
-             QString n(name + " (" + QString::number(i) + ")");
-             if(!m_backend->boxIDs().contains(n)) {
-                 name = n;
-                 break;
-             }
+    if (m_backend->boxIDs().contains(name)) {
+        for (int i = 1;; i++) {
+            QString n(name + " (" + QString::number(i) + ")");
+            if (!m_backend->boxIDs().contains(n)) {
+                name = n;
+                break;
+            }
         }
     }
     QString text = KInputDialog::getText(i18n("Box Name"), i18n("Box Name:"), name, &ok);
@@ -99,7 +99,7 @@ void PlasmaFileBoxes::newBoxDialog()
     } else {
         QString bID = i18n("Box");
     }
-   
+
     QString boxID = m_backend->newBox(boxName, "filebox");
     newBox(boxID, boxName, "filebox");
 }
@@ -115,7 +115,7 @@ void PlasmaFileBoxes::createConfigurationInterface(KConfigDialog *parent)
     QStringList layouts;
     layouts << "Vertical" << "Horizontal";
     configUi.comboBox_layout->clear();
-    configUi.comboBox_layout->insertItems(0,layouts);
+    configUi.comboBox_layout->insertItems(0, layouts);
     configUi.comboBox_layout->setCurrentIndex(m_layoutOrientation);
 
     configUi.checkBox_showName->setChecked(m_showName);
@@ -131,23 +131,23 @@ void PlasmaFileBoxes::configAccepted()
         m_showName = configUi.checkBox_showName->isChecked();
         cg.writeEntry("showName", m_showName);
         reload = true;
-        
+
     }
     if (m_layoutOrientation != configUi.comboBox_layout->currentIndex()) {
         m_layoutOrientation = configUi.comboBox_layout->currentIndex();
         cg.writeEntry("layout", m_layoutOrientation);
         changed = true;
     }
-    if(reload == true) {
+    if (reload == true) {
         foreach(FileBox *box, boxes) {
-                delete box;
-                box = 0;
+            delete box;
+            box = 0;
         }
         boxes.clear();
         loadBoxes();
         emit configNeedsSaving();
-    } else if(changed == true) {
-        if(m_layoutOrientation == 0)
+    } else if (changed == true) {
+        if (m_layoutOrientation == 0)
             m_layout->setOrientation(Qt::Vertical);
         else
             m_layout->setOrientation(Qt::Horizontal);

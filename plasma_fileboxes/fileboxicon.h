@@ -7,18 +7,18 @@
 #include <QGraphicsSceneMouseEvent>
 class FileBoxIcon : public Plasma::ToolButton
 {
-         Q_OBJECT
+    Q_OBJECT
 public:
     FileBoxIcon(const QString& boxID, const QString& name, const QString& icon);
     void resizeEvent(QGraphicsSceneResizeEvent *event);
-    void updateIcon(bool reloadSize=false);
+    void updateIcon(bool reloadSize = false);
 protected:
     void dropEvent(QGraphicsSceneDragDropEvent *event);
     void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
     void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    
+
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 public slots:
     void newBox();
@@ -27,8 +27,8 @@ public slots:
     void clearBox();
     void removeBox();
     void createArchive();
-    
-        
+
+
 signals:
     void newBoxDialog();
     void removeB();
@@ -36,7 +36,7 @@ signals:
 private:
     Box *m_box;
     QString m_icon;
-    void setFileBoxIcon(const QString& iconName, bool reloadSize=false);
+    void setFileBoxIcon(const QString& iconName, bool reloadSize = false);
     QPointF dragStartPosition;
     unsigned int m_size;
 };

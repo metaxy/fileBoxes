@@ -34,9 +34,9 @@ Box::Box(const QString &boxID = "", const QString & name = "Box", const QString 
 bool Box::addFiles(const QStringList &files)
 {
     for (int i = 0; i < files.size(); ++i) {
-        m_backend.newFile(files.at(i),m_boxID);
+        m_backend.newFile(files.at(i), m_boxID);
     }
-    org::kde::KDirNotify::emitFilesAdded("fileboxes:/"+m_boxID+"/");
+    org::kde::KDirNotify::emitFilesAdded("fileboxes:/" + m_boxID + "/");
     return true;
 }
 bool Box::removeFiles(const QStringList &files)
@@ -48,7 +48,7 @@ bool Box::removeFiles(const QStringList &files)
 bool Box::removeAllFiles()
 {
     bool ret = m_backend.removeAllFiles(m_boxID);
-    org::kde::KDirNotify::emitFilesRemoved(QStringList() << "fileboxes:/"+m_boxID+"/");
+    org::kde::KDirNotify::emitFilesRemoved(QStringList() << "fileboxes:/" + m_boxID + "/");
     return ret;
 }
 QString Box::name()
@@ -82,7 +82,7 @@ bool Box::removeBox()
 QList<QUrl> Box::getFiles()
 {
     QList<QUrl> urls;
-    foreach(QUrl url,m_backend.files(m_boxID)) {
+    foreach(QUrl url, m_backend.files(m_boxID)) {
         urls << m_backend.localPath(url);
     }
     return urls;

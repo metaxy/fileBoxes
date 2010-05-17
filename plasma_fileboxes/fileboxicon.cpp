@@ -25,13 +25,13 @@ FileBoxIcon::FileBoxIcon(const QString &boxID, const QString &name, const QStrin
 
     m_box = new Box(boxID, name, icon);
     m_icon = icon;
-    setFileBoxIcon(m_icon,true);
-    connect(this,SIGNAL(clicked()),this,SLOT(openBoxInNewTab()));
+    setFileBoxIcon(m_icon, true);
+    connect(this, SIGNAL(clicked()), this, SLOT(openBoxInNewTab()));
 
 }
 void FileBoxIcon::updateIcon(bool reloadSize)
 {
-    setFileBoxIcon(m_icon,reloadSize);
+    setFileBoxIcon(m_icon, reloadSize);
 }
 void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
 {
@@ -72,7 +72,7 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
     QPen textPen(Qt::black, 1);
     p.setPen(textPen);
     p.setBrush(Qt::NoBrush);
-    if(reloadSize) {
+    if (reloadSize) {
         m_size = m_box->size();
     }
     p.drawText(circle, Qt::AlignCenter, QString::number(m_size));
@@ -94,7 +94,7 @@ void FileBoxIcon::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
 }
 void FileBoxIcon::dragMoveEvent(QGraphicsSceneDragDropEvent* event)
 {
-   event->accept();
+    event->accept();
 }
 
 void FileBoxIcon::dropEvent(QGraphicsSceneDragDropEvent *event)
@@ -143,26 +143,26 @@ void FileBoxIcon::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     qDebug() << "contextMenu";
     QMenu *menu = new QMenu;
 
-   
-    QAction *actionOpenBoxInNewTab = new QAction(KIcon("system-file-manager"),i18n("Open in Tab"), this);
+
+    QAction *actionOpenBoxInNewTab = new QAction(KIcon("system-file-manager"), i18n("Open in Tab"), this);
     connect(actionOpenBoxInNewTab, SIGNAL(triggered(bool)), this, SLOT(openBoxInNewTab()));
-    
-    QAction *actionOpenBoxInNewWindow = new QAction(KIcon("system-file-manager"),i18n("Open in Window"), this);
+
+    QAction *actionOpenBoxInNewWindow = new QAction(KIcon("system-file-manager"), i18n("Open in Window"), this);
     connect(actionOpenBoxInNewWindow, SIGNAL(triggered(bool)), this, SLOT(openBoxInNewWindow()));
-    
-    QAction *actionCreateArchive = new QAction(KIcon("utilities-file-archiver"),i18n("Create Archive"), this);
+
+    QAction *actionCreateArchive = new QAction(KIcon("utilities-file-archiver"), i18n("Create Archive"), this);
     connect(actionCreateArchive, SIGNAL(triggered(bool)), this, SLOT(createArchive()));
-    
-    QAction *actionNewBox = new QAction(KIcon("list-add"),i18n("New Box"), this);
+
+    QAction *actionNewBox = new QAction(KIcon("list-add"), i18n("New Box"), this);
     connect(actionNewBox, SIGNAL(triggered(bool)), this, SLOT(newBox()));
-    
-    QAction *actionCleanUp = new QAction(KIcon("edit-clear"),i18n("Clean up"), this);
+
+    QAction *actionCleanUp = new QAction(KIcon("edit-clear"), i18n("Clean up"), this);
     connect(actionCleanUp, SIGNAL(triggered(bool)), this, SLOT(clearBox()));
-    
-    QAction *actionRemove = new QAction(KIcon("list-remove"),i18n("Remove"), this);
+
+    QAction *actionRemove = new QAction(KIcon("list-remove"), i18n("Remove"), this);
     connect(actionRemove, SIGNAL(triggered(bool)), this, SLOT(removeBox()));
-    
-    
+
+
     menu->addAction(actionOpenBoxInNewTab);
     menu->addAction(actionOpenBoxInNewWindow);
     menu->addAction(actionCreateArchive);
@@ -170,7 +170,7 @@ void FileBoxIcon::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     menu->addAction(actionNewBox);
     menu->addAction(actionCleanUp);
     menu->addAction(actionRemove);
-    
+
 
     menu->show();
     menu->exec(QCursor::pos());
@@ -192,105 +192,105 @@ void FileBoxIcon::openBoxInNewTab()
 {
     qDebug() << "new tab";
     QDBusMessage listOfD = QDBusMessage::createMethodCall("org.kde.dolphin",
-                                               "/dolphin",
-                                               "org.freedesktop.DBus.Introspectable",
-                                               "Introspect");
+                           "/dolphin",
+                           "org.freedesktop.DBus.Introspectable",
+                           "Introspect");
     QDBusMessage listOfDRes = QDBusConnection::sessionBus().call(listOfD);
-    if(listOfDRes.arguments().size() == 0) {
-         openBoxInNewWindow();
-         return;
+    if (listOfDRes.arguments().size() == 0) {
+        openBoxInNewWindow();
+        return;
     }
     QString xml = listOfDRes.arguments().at(0).toString();
     QString search = "Dolphin_";
     int next = xml.indexOf(search);
     QStringList items;
-    while(true) {
+    while (true) {
         QString backup = xml;
-        backup.remove(0,next+search.size());
-        backup.remove(backup.indexOf("\""),backup.size());
+        backup.remove(0, next + search.size());
+        backup.remove(backup.indexOf("\""), backup.size());
         items << backup;
-        xml.remove(search+backup);
+        xml.remove(search + backup);
         next = xml.indexOf(search);
-        if(next == -1)
+        if (next == -1)
             break;
     }
     QString rID;
     QList<QString> windows;
-    QMap<QString,TaskManager::Task *> map;
-    foreach(QString item,items) {
+    QMap<QString, TaskManager::Task *> map;
+    foreach(QString item, items) {
         QDBusMessage a = QDBusMessage::createMethodCall("org.kde.dolphin",
-                                               "/dolphin/Dolphin_"+item,
-                                               "org.kde.KMainWindow",
-                                               "winId");
+                         "/dolphin/Dolphin_" + item,
+                         "org.kde.KMainWindow",
+                         "winId");
         QDBusMessage b = QDBusConnection::sessionBus().call(a);
-        if(b.arguments().size() == 0 || b.arguments().at(0).toString() == "")
+        if (b.arguments().size() == 0 || b.arguments().at(0).toString() == "")
             continue;
         QString id = b.arguments().at(0).toString();
-        TaskManager::Task *task = new TaskManager::Task((WId)id.toLong(),this->parentObject(),"");
-        if(task->isOnCurrentDesktop()) {
+        TaskManager::Task *task = new TaskManager::Task((WId)id.toLong(), this->parentObject(), "");
+        if (task->isOnCurrentDesktop()) {
             windows << item;
             map[item] = task;
         }
     }
 
-    foreach(QString id,windows) {
+    foreach(QString id, windows) {
         TaskManager::Task *task = map.value(id);
-        if(task->isActive()) {
-           rID = id;
-           break;
+        if (task->isActive()) {
+            rID = id;
+            break;
         }
     }
-    if(rID.isEmpty()) {
-        foreach(QString id,windows) {
+    if (rID.isEmpty()) {
+        foreach(QString id, windows) {
             TaskManager::Task *task = map.value(id);
-            if(task->isAlwaysOnTop()) {
-                 rID = id;
-                 break;
+            if (task->isAlwaysOnTop()) {
+                rID = id;
+                break;
             }
-               
+
         }
     }
-    if(rID.isEmpty()) {
-        foreach(QString id,windows) {
+    if (rID.isEmpty()) {
+        foreach(QString id, windows) {
             TaskManager::Task *task = map.value(id);
-            if(task->isOnTop()) {
-                 rID = id;
-                 break;
+            if (task->isOnTop()) {
+                rID = id;
+                break;
             }
-               
+
         }
     }
-    if(rID.isEmpty()) {
-        foreach(QString id,windows) {
+    if (rID.isEmpty()) {
+        foreach(QString id, windows) {
             TaskManager::Task *task = map.value(id);
-            if(!task->isMinimized()) {
+            if (!task->isMinimized()) {
                 rID = id;
                 break;
             }
         }
 
     }
-    if(rID.isEmpty()) {
-        foreach(QString id,windows) {
+    if (rID.isEmpty()) {
+        foreach(QString id, windows) {
             TaskManager::Task *task = map.value(id);
             rID = id;
             break;
         }
 
     }
-    if(rID.isEmpty()) {
+    if (rID.isEmpty()) {
         openBoxInNewWindow();
     } else {
         TaskManager::Task *task = map.value(rID);
         task->activateRaiseOrIconify();
-        QDBusMessage m = QDBusMessage::createMethodCall("org.kde.dolphin","/dolphin/Dolphin_"+rID,"org.kde.KMainWindow", "activateAction");
+        QDBusMessage m = QDBusMessage::createMethodCall("org.kde.dolphin", "/dolphin/Dolphin_" + rID, "org.kde.KMainWindow", "activateAction");
         m << "new_tab";
         bool queued = QDBusConnection::sessionBus().send(m);
-    
-        QDBusMessage m2 = QDBusMessage::createMethodCall("org.kde.dolphin","/dolphin/Dolphin_"+rID,"org.kde.dolphin.MainWindow", "changeUrl");
+
+        QDBusMessage m2 = QDBusMessage::createMethodCall("org.kde.dolphin", "/dolphin/Dolphin_" + rID, "org.kde.dolphin.MainWindow", "changeUrl");
         m2 << "fileboxes:/" + m_box->boxID();
         bool queued2 = QDBusConnection::sessionBus().send(m2);
-        
+
     }
     m_box->setHasNew(false);
     updateIcon();
@@ -301,7 +301,7 @@ void FileBoxIcon::createArchive()
     QProcess *myProcess = new QProcess();
     QList<QUrl> urls = m_box->getFiles();
     QList<QString> files;
-    foreach(QUrl url,urls) {
+    foreach(QUrl url, urls) {
         files << url.toString();
     }
     myProcess->start("ark", QStringList() << "-c" << "-d" << files);
