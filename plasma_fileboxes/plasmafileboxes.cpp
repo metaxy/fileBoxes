@@ -46,12 +46,11 @@ void PlasmaFileBoxes::init()
 }
 void PlasmaFileBoxes::loadBoxes()
 {
-    qDebug() << "laod";
-
     if (m_layoutOrientation == 0)
         m_layout->setOrientation(Qt::Vertical);
     else
         m_layout->setOrientation(Qt::Horizontal);
+    
     QStringList boxIDs = m_backend->boxIDs();
     for (int i = 0; i < boxIDs.size(); ++i) {
         newBox(boxIDs.at(i), m_backend->name(boxIDs.at(i)), m_backend->icon(boxIDs.at(i)));
@@ -72,9 +71,6 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
     box->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     m_layout->addItem(box);
     boxes << box;
-
-
-
 
 }
 

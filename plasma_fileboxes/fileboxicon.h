@@ -5,11 +5,12 @@
 #include <fileboxes/box.h>
 #include <fileboxes/boxesbackend.h>
 #include <QGraphicsSceneMouseEvent>
-class FileBoxIcon : public Plasma::ToolButton
+#include <plasma/widgets/iconwidget.h>
+class FileBoxIcon : public Plasma::IconWidget
 {
     Q_OBJECT
 public:
-    FileBoxIcon(const QString& boxID, const QString& name, const QString& icon);
+    FileBoxIcon(QGraphicsItem *parent,const QString& boxID, const QString& name, const QString& icon);
     void resizeEvent(QGraphicsSceneResizeEvent *event);
     void updateIcon(bool reloadSize = false);
 protected:
@@ -27,7 +28,7 @@ public slots:
     void clearBox();
     void removeBox();
     void createArchive();
-
+    void openDialog();
 
 signals:
     void newBoxDialog();
@@ -39,6 +40,8 @@ private:
     void setFileBoxIcon(const QString& iconName, bool reloadSize = false);
     QPointF dragStartPosition;
     unsigned int m_size;
+    QString m_name;
+   
 };
 
 #endif // FILEBOXICON_H

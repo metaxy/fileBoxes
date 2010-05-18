@@ -7,6 +7,7 @@
 #include <QDBusMessage>
 #include <QDBusConnection>
 #include <KIconLoader>
+#include <KIcon>
 #include <QMenu>
 #include <QDBusInterface>
 #include <klocale.h>
@@ -14,19 +15,24 @@
 #include <taskmanager/task.h>
 #include <taskmanager/taskmanager.h>
 #include <taskmanager/taskmanager.h>
+#include <Plasma/ToolTipManager>
+#include <plasma/widgets/iconwidget.h>
 
-FileBoxIcon::FileBoxIcon(const QString &boxID, const QString &name, const QString &icon) : Plasma::ToolButton()
+FileBoxIcon::FileBoxIcon(QGraphicsItem* parent, const QString& boxID, const QString& name, const QString& icon) : Plasma::IconWidget(parent)
 {
-    this->nativeWidget()->setAcceptDrops(true);
+   // this->nativeWidget()->setAcceptDrops(true);
     setAcceptDrops(true);
     setAcceptHoverEvents(true);
     setAcceptsHoverEvents(true);
-    setAutoRaise(true);
+//   //  setAutoRaise(true);
 
     m_box = new Box(boxID, name, icon);
     m_icon = icon;
+    m_name = name;
     setFileBoxIcon(m_icon, true);
     connect(this, SIGNAL(clicked()), this, SLOT(openBoxInNewTab()));
+    
+
 
 }
 void FileBoxIcon::updateIcon(bool reloadSize)
@@ -35,11 +41,21 @@ void FileBoxIcon::updateIcon(bool reloadSize)
 }
 void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
 {
+    if (reloadSize) {
+        m_size = m_box->size();
+        
+        QString items = i18n("%1 items", QString::number(m_size));
+        Plasma::ToolTipContent d(m_name,items,KIcon(m_icon));
+        Plasma::ToolTipManager::self()->setContent(this, d);
+    }
+    
+    
+     
     QColor noNew(69, 147, 219, 255);//blue
     QColor areNew(102, 219, 67, 255);//green
     qreal size = qMin(this->size().width() , this->size().height()) - 1;
     qreal sizeX = size, sizeY = size;
-    this->nativeWidget()->setIconSize(QSize(sizeX, sizeY));
+   // this->nativeWidget()->setIconSize(QSize(sizeX, sizeY));
     qreal circleWidth = 14, circleHeight = 14;
 
     QIcon icon = KIcon(iconName);
@@ -72,9 +88,7 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
     QPen textPen(Qt::black, 1);
     p.setPen(textPen);
     p.setBrush(Qt::NoBrush);
-    if (reloadSize) {
-        m_size = m_box->size();
-    }
+    
     p.drawText(circle, Qt::AlignCenter, QString::number(m_size));
 
     setIcon(pm);
@@ -82,7 +96,7 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
 void FileBoxIcon::resizeEvent(QGraphicsSceneResizeEvent* event)
 {
     setFileBoxIcon(m_icon);
-    Plasma::ToolButton::resizeEvent(event);
+    Plasma::IconWidget::resizeEvent(event);
 }
 void FileBoxIcon::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
 {
@@ -120,6 +134,7 @@ void FileBoxIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
     if (event->button() == Qt::LeftButton) {
         dragStartPosition = event->pos();
     }
+    Plasma::IconWidget::mousePressEvent(event);
 }
 
 void FileBoxIcon::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -129,7 +144,7 @@ void FileBoxIcon::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
 
-    QDrag *drag = new QDrag(this->widget());
+    QDrag *drag = new QDrag((QWidget*)this->parentWidget());
     QMimeData *mimeData = new QMimeData;
 
     mimeData->setUrls(m_box->getFiles());
@@ -317,4 +332,7 @@ void FileBoxIcon::removeBox()
 {
     m_box->removeBox();
     emit removeB();
+}
+void FileBoxIcon::openDialog()
+{
 }

@@ -23,7 +23,7 @@ FileBox::FileBox(QGraphicsLinearLayout* parent, const QString boxID, const QStri
 
     m_layout->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
     //_______________________________________
-    m_fileBoxIcon = new FileBoxIcon(boxID, name, icon);
+    m_fileBoxIcon = new FileBoxIcon(this,boxID, name, icon);
     connect(m_fileBoxIcon, SIGNAL(removeB()), this, SLOT(removeBox()));
     m_fileBoxIcon->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
     m_layout->addItem(m_fileBoxIcon);
