@@ -14,6 +14,7 @@
 #include "filebox.h"
 #include <fileboxes/boxesbackend.h>
 #include <KConfigDialog>
+#include <kdirwatch.h>
 class QSizeF;
 
 // Define our plasma Applet
@@ -48,6 +49,12 @@ private:
 public slots:
     void newBoxDialog();
     void configAccepted();
+    void load();
+    void reloadBoxes();
+    void slotFilesAdded(QString d);
+    void slotFilesRemoved(QStringList fileList);
+    void removeBox(QString id);
+
 };
 
 // This is the command that links your applet to the .desktop file

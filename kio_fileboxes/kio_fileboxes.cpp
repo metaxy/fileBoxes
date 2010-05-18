@@ -139,6 +139,18 @@ KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
 }
 void FileBoxesProtocol::listDir(const KUrl& url)
 {
+    if(m_backend->m_loaded == -1) {
+        delete m_backend;
+        m_backend = 0;
+        m_backend = new BoxesBackend();
+    }
+    if(m_backend->m_loaded == -1) {
+        listEntry(KIO::UDSEntry(), true);
+        finished();
+        //todo: return error nepomuk not laoded
+        return;
+    }
+    
     if (parseUrl(url) == 0) {
         //create Boxes
         QStringList boxes = m_backend->boxIDs();
@@ -165,16 +177,21 @@ void FileBoxesProtocol::listDir(const KUrl& url)
 }
 void FileBoxesProtocol::del(const KUrl& url, bool isfile)
 {
-    QString boxID = url.path();
-    boxID.remove(0, 1);
-    boxID.remove(boxID.indexOf("/"), boxID.size());
+    if(parseUrl(url) != 0 ) {
+        QString boxID = url.path();
+        boxID.remove(0, 1);
+        boxID.remove(boxID.indexOf("/"), boxID.size());
 
 
-    QString f = url.path();
-    f.remove(0, f.lastIndexOf("/") + 1);
-    f.replace("nepomuk_3A_2Fres_2F", "nepomuk:/res/");
+        QString f = url.path();
+        f.remove(0, f.lastIndexOf("/") + 1);
+        f.replace("nepomuk_3A_2Fres_2F", "nepomuk:/res/");
 
-    m_backend->removeFile(f, boxID);
+        m_backend->removeFile(f, boxID);
+    } else {
+        //todo:
+        qDebug() << "remove box" << url;
+    }
     finished();
 }
 void FileBoxesProtocol::put(const KUrl& url, int permissions, KIO::JobFlags flags)
@@ -215,6 +232,7 @@ void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry& entry,
 }
 bool FileBoxesProtocol::rewriteUrl(const KUrl& url, KUrl& newURL)
 {
+    qDebug() << url;
     return false;
 }
 

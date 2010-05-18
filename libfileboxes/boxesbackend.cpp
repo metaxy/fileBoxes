@@ -38,7 +38,7 @@
 using namespace Nepomuk;
 BoxesBackend::BoxesBackend()
 {
-    Nepomuk::ResourceManager::instance()->init();
+    m_loaded = Nepomuk::ResourceManager::instance()->init();
 }
 BoxesBackend::~BoxesBackend()
 {
@@ -53,6 +53,11 @@ bool BoxesBackend::newFile(const QString& fileName, const QString& boxID)
 QString BoxesBackend::newBox(const QString &name, const QString &icon)
 {
     QString boxID = name;
+    if(name == "") {
+        boxID = i18n("Box");
+    }
+  
+   
     if (boxIDs().contains(name)) {
         for (int i = 1;; i++) {
             QString n(name + " (" + QString::number(i) + ")");
@@ -70,8 +75,8 @@ QString BoxesBackend::newBox(const QString &name, const QString &icon)
     boxR.addProperty(Nepomuk::Vocabulary::FB::hasNewFiles(), false);
     boxR.addProperty(Nepomuk::Vocabulary::FB::boxID(), boxID);
     boxR.addProperty(Soprano::Vocabulary::NAO::iconName() , icon);
-    org::kde::KDirNotify::emitFilesAdded("fileboxes:/" + boxID + "/");
-
+    //org::kde::KDirNotify::emitFilesAdded("fileboxes:/" + boxID + "/");
+    org::kde::KDirNotify::emitFilesAdded("fileboxes:/");
     return boxID;
 }
 

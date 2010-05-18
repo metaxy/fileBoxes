@@ -143,8 +143,8 @@ void FileBoxIcon::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if (!(event->buttons() & Qt::LeftButton)) {
         return;
     }
-
-    QDrag *drag = new QDrag((QWidget*)this->parentWidget());
+    QWidget *w = new QWidget;
+    QDrag *drag = new QDrag(w);
     QMimeData *mimeData = new QMimeData;
 
     mimeData->setUrls(m_box->getFiles());

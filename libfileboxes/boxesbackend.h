@@ -32,7 +32,7 @@ public:
     BoxesBackend();
     ~BoxesBackend();
     bool newFile(const QString &fileName, const QString &boxID);
-    QString newBox(const QString &fileName, const QString &icon);
+    QString newBox(const QString &boxName, const QString &icon);
 
     bool removeBox(const QString &boxID);
     bool removeFile(const QString& fileName, const QString& boxID);
@@ -53,6 +53,7 @@ public:
     QUrl localUrl(QUrl url);
     Nepomuk::Resource boxRes(const QString& boxID);
     QString boxResUrl(const QString& boxID);
+    int m_loaded;
 
 private:
     const Nepomuk::Resource fileBoxesRes();

@@ -30,7 +30,7 @@
 class FILEBOXES_EXPORT Box
 {
 public:
-    Box(const QString &boxID, const QString &name, const QString &icon);
+    Box(const QString &boxID, const QString &name = "Box", const QString &icon = "filebox");
     bool addFiles(const QStringList &files);
     bool removeFiles(const QStringList &files);
     bool removeAllFiles();

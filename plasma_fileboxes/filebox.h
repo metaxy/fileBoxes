@@ -10,9 +10,12 @@ class FileBox : public QGraphicsWidget
     Q_OBJECT
 public slots:
     void removeBox();
+signals:
+    void removeMe(QString id);
 public:
     FileBox(QGraphicsLinearLayout *parent, const QString boxID, const QString name, const QString icon, BoxesBackend* backend, bool showName);
     FileBoxIcon *m_fileBoxIcon;
+    const QString boxID();
 protected:
 
 

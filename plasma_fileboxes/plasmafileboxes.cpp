@@ -13,6 +13,9 @@
 #include <KConfigDialog>
 #include <QInputDialog>
 #include <kinputdialog.h>
+#include <QTimer>
+#include <Plasma/Containment>
+#include <KDirNotify>
 PlasmaFileBoxes::PlasmaFileBoxes(QObject *parent, const QVariantList &args)
         : Plasma::Applet(parent, args)
 {
@@ -20,10 +23,18 @@ PlasmaFileBoxes::PlasmaFileBoxes(QObject *parent, const QVariantList &args)
 
     setHasConfigurationInterface(true);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
+    
+    org::kde::KDirNotify *kdirnotify = new org::kde::KDirNotify(QString(), QString(), QDBusConnection::sessionBus(), this);
+    connect(kdirnotify, SIGNAL(FilesAdded(QString)), SLOT(slotFilesAdded(QString)));
+    connect(kdirnotify, SIGNAL(FilesRemoved(QStringList)), SLOT(slotFilesRemoved(QStringList)));
+   
+    
+    
     //setAcceptDrops(true);
-    resize(200, 200);
-    m_backend = new BoxesBackend();
-
+    /*if(this->containment()->containmentType() == Plasma::Containment::DesktopContainment) {*/
+        resize(200, 200);
+  /*  } */
+    
 }
 
 
@@ -35,14 +46,34 @@ PlasmaFileBoxes::~PlasmaFileBoxes()
 void PlasmaFileBoxes::init()
 {
     KConfigGroup cg = config();
-    m_layoutOrientation = cg.readEntry("layout", 0); // 0 = Vertical, 1 = Horizontal
-    m_showName = cg.readEntry("showName", true);
+    
+  /*  if(this->containment()->containmentType() == Plasma::Containment::PanelContainment) {
+        m_layoutOrientation = cg.readEntry("layout", 1); // 0 = Vertical, 1 = Horizontal
+        m_showName = cg.readEntry("showName", false);
+    } else {*/
+        m_layoutOrientation = cg.readEntry("layout", 0); // 0 = Vertical, 1 = Horizontal
+        m_showName = cg.readEntry("showName", true);
+   /* }*/
+
     m_layout = new QGraphicsLinearLayout;
     this->setLayout(m_layout);
     m_layout->setContentsMargins(0, 0, 0, 0);
     m_layout->setSpacing(0);
     m_layout->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    loadBoxes();
+    load();
+    
+}
+void PlasmaFileBoxes::load()
+{
+   
+    m_backend = new BoxesBackend();
+    if(m_backend->m_loaded == -1) {
+        setBusy(true);
+        QTimer::singleShot(10*1000,this,SLOT(load()));//retry every 10 sec
+        return;
+    } else {
+        loadBoxes();
+    }
 }
 void PlasmaFileBoxes::loadBoxes()
 {
@@ -60,6 +91,60 @@ void PlasmaFileBoxes::loadBoxes()
         newBox(newBoxID, i18n("Default"), "filebox");
     }
 }
+void PlasmaFileBoxes::reloadBoxes()
+{
+    qDebug() << "reload Boxes";
+    foreach(FileBox *box, boxes) {
+        if(box) {
+            delete box;
+            box = 0;
+        }
+    }
+    boxes.clear();
+    loadBoxes();
+}
+void PlasmaFileBoxes::slotFilesAdded(QString d)
+{
+    if(d.startsWith("fileboxes:")) {
+        QStringList boxIDs = m_backend->boxIDs();
+        foreach(FileBox *box, boxes) {
+            if(box) {
+                boxIDs.removeOne(box->boxID());
+            }
+        }
+        qDebug() << "boxIDs = " << boxIDs;
+        foreach(QString id,boxIDs) {
+            newBox(id,m_backend->name(id),m_backend->icon(id));
+        }
+    }
+}
+void PlasmaFileBoxes::slotFilesRemoved(QStringList fileList)
+{
+    qDebug() << fileList;
+    foreach(QString a, fileList) {
+        if(a.startsWith("fileboxes:/")) {
+            QString id = a.remove("fileboxes:/");
+            foreach(FileBox *box, boxes) {
+                if(box && box->boxID() == id) {
+                      boxes.removeOne(box);
+                      delete box;
+                      box = 0;
+                }
+            }
+        }   
+    }
+}
+void PlasmaFileBoxes::removeBox(QString id)
+{
+    foreach(FileBox *box, boxes) {
+        if(box && box->boxID() == id) {
+            boxes.removeOne(box);
+            delete box;
+            box = 0;
+        }
+    }  
+}
+
 
 void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
 {
@@ -67,6 +152,7 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
     FileBox *box =  new FileBox(m_layout, boxID, name, icon, m_backend, m_showName);
     box->setContentsMargins(0, 0, 0, 0);
     connect(box->m_fileBoxIcon, SIGNAL(newBoxDialog()), this, SLOT(newBoxDialog()));
+    connect(box, SIGNAL(removeMe(QString)), this, SLOT(removeBox(QString)));
     box->setObjectName("box_" + boxID);
     box->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     m_layout->addItem(box);
@@ -135,12 +221,7 @@ void PlasmaFileBoxes::configAccepted()
         changed = true;
     }
     if (reload == true) {
-        foreach(FileBox *box, boxes) {
-            delete box;
-            box = 0;
-        }
-        boxes.clear();
-        loadBoxes();
+        reloadBoxes();
         emit configNeedsSaving();
     } else if (changed == true) {
         if (m_layoutOrientation == 0)

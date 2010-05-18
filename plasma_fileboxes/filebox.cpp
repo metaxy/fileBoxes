@@ -37,10 +37,14 @@ FileBox::FileBox(QGraphicsLinearLayout* parent, const QString boxID, const QStri
     }
 
 }
+const QString FileBox::boxID()
+{
+    return m_boxID;
+}
 
 void FileBox::removeBox()
 {
-    delete this;
+    emit removeMe(m_boxID);
 }
 
 #include "filebox.moc"

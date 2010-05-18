@@ -23,7 +23,7 @@
 #include <KUrl>
 #include <KDirWatch>
 #include <kdirnotify.h>
-Box::Box(const QString &boxID = "", const QString & name = "Box", const QString & icon = "filebox")
+Box::Box(const QString &boxID, const QString & name, const QString & icon)
 {
     m_boxID = boxID;
     if (m_boxID.isEmpty()) {

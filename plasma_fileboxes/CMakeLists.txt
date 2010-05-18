@@ -11,7 +11,7 @@ kde4_add_plugin(plasma_applet_fileboxes ${fileboxes_SRCS})
 
 
 target_link_libraries(plasma_applet_fileboxes fileboxes taskmanager
-                      ${KDE4_PLASMA_LIBS}  ${KDE4_KDEUI_LIBS}  ${KDE4_KWIN_LIBS})
+                      ${KDE4_PLASMA_LIBS} ${KDE4_KDEUI_LIBS}  ${KDE4_KWIN_LIBS} ${KDE4_KIO_LIBS})
  
 install(TARGETS plasma_applet_fileboxes
         DESTINATION ${PLUGIN_INSTALL_DIR})
