@@ -127,7 +127,7 @@ void PlasmaFileBoxes::slotFilesRemoved(QStringList fileList)
             qDebug() << "slotFilesRemoved" << id;
            /* if(id.startsWith("/")) {
                 id.remove(0,1);
-            }*/
+//             }*/
             foreach(FileBox *box, boxes) {
                 if(box && box->boxID() == id) {
                       boxes.removeOne(box);

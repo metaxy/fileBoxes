@@ -21,6 +21,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QFile>
 #include <fileboxes/boxesbackend.h>
+#include <kio/jobclasses.h>
 class FileBoxesProtocol : public KIO::ForwardingSlaveBase
 {
     Q_OBJECT
@@ -32,6 +33,10 @@ public:
     void del(const KUrl& url, bool isfile);
     void mimetype(const KUrl& url);
     void put(const KUrl& url, int permissions, KIO::JobFlags flags);
+    void symlink(const QString &target, const KUrl &dest,
+                         KIO::JobFlags flags);
+    void copy(const KUrl &src, const KUrl &dest,
+                      int permissions, KIO::JobFlags flags);
 
 protected:
 
