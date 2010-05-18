@@ -206,6 +206,7 @@ unsigned int BoxesBackend::boxSize(const QString &boxID)
 }
 bool BoxesBackend::removeBox(const QString &boxID)
 {
+    qDebug() << "removeBox" << boxID;
     removeAllFiles(boxID);
     Resource boxR = boxRes(boxID);
     boxR.removeProperty(Nepomuk::Vocabulary::FB::isFileBoxIn(), fileBoxesRes());

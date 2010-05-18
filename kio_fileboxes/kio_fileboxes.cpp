@@ -177,7 +177,10 @@ void FileBoxesProtocol::listDir(const KUrl& url)
 }
 void FileBoxesProtocol::del(const KUrl& url, bool isfile)
 {
-    if(parseUrl(url) != 0 ) {
+    QString path = url.path(KUrl::RemoveTrailingSlash);
+    path.remove(0, 1);
+    qDebug() << "del = " << path;
+    if(path.contains("/")) {
         QString boxID = url.path();
         boxID.remove(0, 1);
         boxID.remove(boxID.indexOf("/"), boxID.size());
@@ -189,8 +192,11 @@ void FileBoxesProtocol::del(const KUrl& url, bool isfile)
 
         m_backend->removeFile(f, boxID);
     } else {
+         QString boxID = url.path();
+         boxID.remove(0, 1);
+         m_backend->removeBox(boxID);
         //todo:
-        qDebug() << "remove box" << url;
+        qDebug() << "remove box " << url << boxID;
     }
     finished();
 }
