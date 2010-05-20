@@ -47,13 +47,13 @@ void PlasmaFileBoxes::init()
 {
     KConfigGroup cg = config();
     
-  /*  if(this->containment()->containmentType() == Plasma::Containment::PanelContainment) {
+    if(this->containment()->containmentType() == Plasma::Containment::PanelContainment) {
         m_layoutOrientation = cg.readEntry("layout", 1); // 0 = Vertical, 1 = Horizontal
         m_showName = cg.readEntry("showName", false);
-    } else {*/
+    } else {
         m_layoutOrientation = cg.readEntry("layout", 0); // 0 = Vertical, 1 = Horizontal
         m_showName = cg.readEntry("showName", true);
-   /* }*/
+    }
 
     m_layout = new QGraphicsLinearLayout;
     this->setLayout(m_layout);

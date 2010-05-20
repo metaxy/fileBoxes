@@ -46,7 +46,7 @@ BoxesBackend::~BoxesBackend()
 bool BoxesBackend::newFile(const QString& fileName, const QString& boxID)
 {
     Resource f(fileName);
-    f.addProperty(Nepomuk::Vocabulary::FB::isPartOfFileBox(), boxRes(boxID));
+    f.addProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
 
     return true;
 }
@@ -87,8 +87,7 @@ bool BoxesBackend::removeFile(const QString &fileName, const QString &boxID)
     Resource f(fileName);
     org::kde::KDirNotify::emitFilesRemoved(QStringList() << "fileboxes:/" + boxID + "/" + n);
 
-    //f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
-    f.removeProperty(Nepomuk::Vocabulary::FB::isPartOfFileBox(), boxRes(boxID));
+    f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
     return true;
 }
 bool BoxesBackend::removeFiles(const QStringList &files, const QString &boxID)
@@ -101,7 +100,7 @@ bool BoxesBackend::removeFiles(const QStringList &files, const QString &boxID)
 bool BoxesBackend::removeAllFiles(const QString &boxID)
 {
     Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
-    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::FB::isPartOfFileBox(),
+    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::NIE::isPartOf(),
                                         partTerm,
                                         Nepomuk::Query::ComparisonTerm::Equal);
     Nepomuk::Query::Query query(term);
@@ -109,7 +108,7 @@ bool BoxesBackend::removeAllFiles(const QString &boxID)
     Soprano::QueryResultIterator it = Nepomuk::ResourceManager::instance()->mainModel()->executeQuery(q, Soprano::Query::QueryLanguageSparql);
     while (it.next()) {
         Resource f(it.binding(0).uri());
-        f.removeProperty(Nepomuk::Vocabulary::FB::isPartOfFileBox(), boxRes(boxID));
+        f.removeProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
     }
     return true;
 }
@@ -117,7 +116,7 @@ QList<QUrl> BoxesBackend::files(const QString &boxID)
 {
     qDebug() << "fileboxes files = " << boxID;
     Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
-    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::FB::isPartOfFileBox(),
+    Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::NIE::isPartOf(),
                                         partTerm,
                                         Nepomuk::Query::ComparisonTerm::Equal);
     Nepomuk::Query::Query query(term);

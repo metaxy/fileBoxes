@@ -11,29 +11,30 @@ fb: {
 
     fb:FileBox
         a rdfs:Class ;
-        rdfs:label "filebox";
+        rdfs:subClassOf rdfs:Resource ;
+        rdfs:label "Filebox";
         rdfs:comment "Represents a fileBox" ;
         rdfs:subClassOf rdfs:Resource .
-
-	fb:isPartOfFileBox
-        a rdf:Property ;
-        rdfs:label "isPartOfFileBox";
-        rdfs:comment "Is in file box." .
 
     fb:boxID
         a rdf:Property ;
         rdfs:label "box ID" ;
+        rdfs:domain fb:FileBox ;
         rdfs:comment "The ID of the box" .
+        
 
     fb:hasNewFiles
         a rdf:Property ;
         rdfs:label "has new files" ;
         rdfs:range xsd:boolean ;
+        rdfs:domain fb:FileBox ;
         rdfs:comment "If it has new files" .
+       
 
     fb:isFileBoxIn
         a rdf:Property ;
         rdfs:label "isFileBoxIn" ;
+        rdfs:domain fb:FileBox ;
         rdfs:comment "Is a fileboxes in Ex. fileboxes:/" .
         
 }

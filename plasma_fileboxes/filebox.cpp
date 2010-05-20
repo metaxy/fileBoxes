@@ -33,7 +33,7 @@ FileBox::FileBox(QGraphicsLinearLayout* parent, const QString boxID, const QStri
         Plasma::Label *label = new Plasma::Label();
         label->setText(m_name);
         m_layout->addItem(label);
-        m_layout->setAlignment(label, Qt::AlignHCenter);
+        m_layout->setAlignment(label, Qt::AlignJustify);
     }
 
 }
