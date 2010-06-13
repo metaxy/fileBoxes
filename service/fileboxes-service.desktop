@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=KonqPopupMenu/Plugin
+MimeType=application/octet-stream;inode/directory
+Actions=newFileBox
+
+[Desktop Action newFileBox]
+Name=Add to new filebox
+Icon=filebox
+Exec=fileboxeshelper --add-files-in-new-box %U
