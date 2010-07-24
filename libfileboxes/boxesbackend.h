@@ -23,7 +23,8 @@
 #include <QtCore/QStringList>
 #include <QtCore/QSettings>
 #include <QtCore/QUrl>
-#include "Nepomuk/Resource"
+#include <Nepomuk/Resource>
+#include <Soprano/Model>
 #include "boxsettings.h"
 #include "fileboxes_export.h"
 class FILEBOXES_EXPORT BoxesBackend
@@ -56,7 +57,8 @@ public:
     int m_loaded;
 
 private:
-    const Nepomuk::Resource fileBoxesRes();
+    const Nepomuk::Resource fileBoxesRes() const;
+    Soprano::Model* m_model;
 
 };
 

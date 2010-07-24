@@ -31,7 +31,7 @@
 #include <QLabel>
 #include <QProcess>
 FileBoxWidget::FileBoxWidget(QWidget *parent, const QString &boxID, const QString &name, const QString &icon, BoxesBackend * backend)
-        : QWidget(parent)
+    : QWidget(parent)
 {
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     setContextMenuPolicy(Qt::CustomContextMenu);
@@ -128,7 +128,7 @@ void FileBoxWidget::tarBox()
     //myProcess->start("kioclient",QStringList() << "exec" << "fileboxes:/"+m_box->name());
     QList<QUrl> files2 = m_box->getFiles();
     QList<QString> files;
-    for (int i = 0; i < files2.size(); ++i) {
+    for(int i = 0; i < files2.size(); ++i) {
         files << files2.at(i).toLocalFile();
     }
     myProcess->start("ark", QStringList() << "-c" << "-d" << files);

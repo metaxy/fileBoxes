@@ -1,19 +1,15 @@
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix nrl:  <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
-@prefix nie:  <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#> .
 @prefix fb:   <http://paul.walger.eu/ontologies/fb#> .
 
 fb: {
-
- 
 
     fb:FileBox
         a rdfs:Class ;
         rdfs:subClassOf rdfs:Resource ;
         rdfs:label "Filebox";
-        rdfs:comment "Represents a fileBox" ;
+        rdfs:comment "Represents a FileBox" ;
         rdfs:subClassOf rdfs:Resource .
 
     fb:boxID
@@ -28,13 +24,13 @@ fb: {
         rdfs:label "has new files" ;
         rdfs:range xsd:boolean ;
         rdfs:domain fb:FileBox ;
-        rdfs:comment "If it has new files" .
+        rdfs:comment "Has new files." .
        
 
     fb:isFileBoxIn
         a rdf:Property ;
         rdfs:label "isFileBoxIn" ;
         rdfs:domain fb:FileBox ;
-        rdfs:comment "Is a fileboxes in Ex. fileboxes:/" .
+        rdfs:comment "Is a filebox in Ex. fileboxes:/" .
         
 }

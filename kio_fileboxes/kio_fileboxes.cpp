@@ -46,7 +46,7 @@
 
 #include <QCoreApplication>
 FileBoxesProtocol::FileBoxesProtocol(const QByteArray& protocol, const QByteArray &pool, const QByteArray &app)
-        : KIO::ForwardingSlaveBase(protocol, pool, app)
+    : KIO::ForwardingSlaveBase(protocol, pool, app)
 {
     m_backend = new BoxesBackend();
 }
@@ -58,7 +58,7 @@ int FileBoxesProtocol::parseUrl(const KUrl& url)
 {
     kDebug() << url;
     const QString path = url.path(KUrl::RemoveTrailingSlash);
-    if (path.isEmpty() || path == QLatin1String("/")) {
+    if(path.isEmpty() || path == QLatin1String("/")) {
         return 0;
     } else {
         return 1;
@@ -80,9 +80,9 @@ KIO::UDSEntry FileBoxesProtocol::createBox(const QString& boxID)
 KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
 {
     KIO::UDSEntry uds;
-    if (KIO::StatJob* job = KIO::stat(url, KIO::HideProgressInfo)) {
+    if(KIO::StatJob* job = KIO::stat(url, KIO::HideProgressInfo)) {
         job->setAutoDelete(false);
-        if (KIO::NetAccess::synchronousRun(job, 0)) {
+        if(KIO::NetAccess::synchronousRun(job, 0)) {
             uds = job->statResult();
         }
         delete job;
@@ -90,11 +90,11 @@ KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
     QUrl localUrl = m_backend->localUrl(url);
     QString localPath = localUrl.toLocalFile();
     KUrl fileUrl(localUrl);
-    if (uds.isDir()) {
+    if(uds.isDir()) {
         uds.insert(KIO::UDSEntry::UDS_URL, fileUrl.url());
     }
 //
-    if (fileUrl.isLocalFile()) {
+    if(fileUrl.isLocalFile()) {
         uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, fileUrl.toLocalFile());
     }
     uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString());
@@ -125,12 +125,12 @@ KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
     */
     uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
     QString mimetype = uds.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
-    if (mimetype.isEmpty()) {
+    if(mimetype.isEmpty()) {
         mimetype = KMimeType::findByUrl(fileUrl)->name();
         uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, mimetype);
     }
 
-    if (item.isFile()) {
+    if(item.isFile()) {
         uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
         uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
         uds.insert(KIO::UDSEntry::UDS_LINK_DEST, localPath);
@@ -150,8 +150,8 @@ void FileBoxesProtocol::listDir(const KUrl& url)
         //todo: return error nepomuk not laoded
         return;
     }
-    
-    if (parseUrl(url) == 0) {
+
+    if(parseUrl(url) == 0) {
         //create Boxes
         QStringList boxes = m_backend->boxIDs();
         foreach(QString id, boxes) {
@@ -192,9 +192,9 @@ void FileBoxesProtocol::del(const KUrl& url, bool isfile)
 
         m_backend->removeFile(f, boxID);
     } else {
-         QString boxID = url.path();
-         boxID.remove(0, 1);
-         m_backend->removeBox(boxID);
+        QString boxID = url.path();
+        boxID.remove(0, 1);
+        m_backend->removeBox(boxID);
         //todo:
         qDebug() << "remove box " << url << boxID;
     }
@@ -214,7 +214,7 @@ void FileBoxesProtocol::mimetype(const KUrl& url)
 void FileBoxesProtocol::stat(const KUrl& url)
 {
     qDebug() << "stat" << url;
-    if (parseUrl(url) == 1) {
+    if(parseUrl(url) == 1) {
         QString boxID = url.path();
         boxID.remove(0, 1);
         boxID.remove(boxID.indexOf("/"), boxID.size());
@@ -235,15 +235,15 @@ void FileBoxesProtocol::stat(const KUrl& url)
 void FileBoxesProtocol::prepareUDSEntry(KIO::UDSEntry& entry,
                                         bool listing) const
 {
-    qDebug() << "prepareUDSEntry" << entry.stringValue(KIO::UDSEntry::UDS_DISPLAY_NAME) 
-            << entry.stringValue(KIO::UDSEntry::UDS_NAME) 
-              << entry.stringValue(KIO::UDSEntry::UDS_LOCAL_PATH)
-            << listing;
-   // ForwardingSlaveBase::prepareUDSEntry(entry, listing);
+    qDebug() << "prepareUDSEntry" << entry.stringValue(KIO::UDSEntry::UDS_DISPLAY_NAME)
+             << entry.stringValue(KIO::UDSEntry::UDS_NAME)
+             << entry.stringValue(KIO::UDSEntry::UDS_LOCAL_PATH)
+             << listing;
+    // ForwardingSlaveBase::prepareUDSEntry(entry, listing);
 }
 void FileBoxesProtocol::symlink(const QString& target, const KUrl& dest, KIO::JobFlags flags)
 {
-    qDebug() << "symlink "<< target << dest;
+    qDebug() << "symlink " << target << dest;
 }
 void FileBoxesProtocol::copy(const KUrl& src, const KUrl& dest, int permissions, KIO::JobFlags flags)
 {
@@ -255,14 +255,14 @@ bool FileBoxesProtocol::rewriteUrl(const KUrl& url, KUrl& newURL)
     qDebug() << "rewrite " << url;
     if(parseUrl(url) == 1) {
         QString path = url.path();
-        path.remove(0,path.lastIndexOf("/")+1);
-        
+        path.remove(0, path.lastIndexOf("/") + 1);
+
         qDebug() << "new Path = " << path;
         path.replace("nepomuk_3A_2Fres_2F", "nepomuk:/res/");
         newURL = m_backend->localUrl(path);
         qDebug() << "new URL = " << newURL;
         return true;
-        
+
     }
     return false;
 }

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=File Boxes
-Comment=File Boxes
+Comment=File Boxes fileboxes
 Type=Service
 Icon=filebox
 X-KDE-ServiceTypes=Plasma/Applet

@@ -17,24 +17,21 @@
 #include <Plasma/Containment>
 #include <KDirNotify>
 PlasmaFileBoxes::PlasmaFileBoxes(QObject *parent, const QVariantList &args)
-        : Plasma::Applet(parent, args)
+    : Plasma::Applet(parent, args)
 {
     setBackgroundHints(DefaultBackground);
 
     setHasConfigurationInterface(true);
     setAspectRatioMode(Plasma::IgnoreAspectRatio);
-    
-    org::kde::KDirNotify *kdirnotify = new org::kde::KDirNotify(QString(), QString(), QDBusConnection::sessionBus(), this);
-    connect(kdirnotify, SIGNAL(FilesAdded(QString)), SLOT(slotFilesAdded(QString)));
-    connect(kdirnotify, SIGNAL(FilesRemoved(QStringList)), SLOT(slotFilesRemoved(QStringList)));
-   
-    
-    
+
+
+
+
     //setAcceptDrops(true);
     /*if(this->containment()->containmentType() == Plasma::Containment::DesktopContainment) {*/
-        resize(200, 200);
-  /*  } */
-    
+    resize(200, 200);
+    /*  } */
+
 }
 
 
@@ -46,7 +43,7 @@ PlasmaFileBoxes::~PlasmaFileBoxes()
 void PlasmaFileBoxes::init()
 {
     KConfigGroup cg = config();
-    
+
     if(this->containment()->containmentType() == Plasma::Containment::PanelContainment) {
         m_layoutOrientation = cg.readEntry("layout", 1); // 0 = Vertical, 1 = Horizontal
         m_showName = cg.readEntry("showName", false);
@@ -65,11 +62,11 @@ void PlasmaFileBoxes::init()
 }
 void PlasmaFileBoxes::load()
 {
-   
+
     m_backend = new BoxesBackend();
     if(m_backend->m_loaded == -1) {
         setBusy(true);
-        QTimer::singleShot(10*1000,this,SLOT(load()));//retry every 10 sec
+        QTimer::singleShot(30 * 1000, this, SLOT(load())); //retry every 10 sec
         return;
     } else {
         loadBoxes();
@@ -77,24 +74,30 @@ void PlasmaFileBoxes::load()
 }
 void PlasmaFileBoxes::loadBoxes()
 {
-    if (m_layoutOrientation == 0)
+    if(m_layoutOrientation == 0)
         m_layout->setOrientation(Qt::Vertical);
     else
         m_layout->setOrientation(Qt::Horizontal);
-    
+
     QStringList boxIDs = m_backend->boxIDs();
-    for (int i = 0; i < boxIDs.size(); ++i) {
+    for(int i = 0; i < boxIDs.size(); ++i) {
         newBox(boxIDs.at(i), m_backend->name(boxIDs.at(i)), m_backend->icon(boxIDs.at(i)));
     }
-    if (boxIDs.size() == 0) {
+    if(boxIDs.size() == 0) {
         QString newBoxID = m_backend->newBox(i18n("Default"), "filebox");
         newBox(newBoxID, i18n("Default"), "filebox");
     }
+        
+    org::kde::KDirNotify *kdirnotify = new org::kde::KDirNotify(QString(), QString(), QDBusConnection::sessionBus(), this);
+    connect(kdirnotify, SIGNAL(FilesAdded(QString)), SLOT(slotFilesAdded(QString)));
+    connect(kdirnotify, SIGNAL(FilesRemoved(QStringList)), SLOT(slotFilesRemoved(QStringList)));
 }
 void PlasmaFileBoxes::reloadBoxes()
 {
-    qDebug() << "reload Boxes";
-    foreach(FileBox *box, boxes) {
+    disconnect(this,SLOT(slotFilesAdded(QString)));
+    disconnect(this,SLOT(slotFilesRemoved(QStringList)));
+    
+    foreach(FileBox * box, boxes) {
         if(box) {
             delete box;
             box = 0;
@@ -107,14 +110,14 @@ void PlasmaFileBoxes::slotFilesAdded(QString d)
 {
     if(d.startsWith("fileboxes:")) {
         QStringList boxIDs = m_backend->boxIDs();
-        foreach(FileBox *box, boxes) {
+        foreach(FileBox * box, boxes) {
             if(box) {
                 boxIDs.removeOne(box->boxID());
             }
         }
         qDebug() << "boxIDs = " << boxIDs;
-        foreach(QString id,boxIDs) {
-            newBox(id,m_backend->name(id),m_backend->icon(id));
+        foreach(QString id, boxIDs) {
+            newBox(id, m_backend->name(id), m_backend->icon(id));
         }
     }
 }
@@ -125,34 +128,33 @@ void PlasmaFileBoxes::slotFilesRemoved(QStringList fileList)
         if(a.startsWith("fileboxes:/")) {
             QString id = a.remove("fileboxes:/");
             qDebug() << "slotFilesRemoved" << id;
-           /* if(id.startsWith("/")) {
-                id.remove(0,1);
-//             }*/
-            foreach(FileBox *box, boxes) {
+            /* if(id.startsWith("/")) {
+                 id.remove(0,1);
+            //             }*/
+            foreach(FileBox * box, boxes) {
                 if(box && box->boxID() == id) {
-                      boxes.removeOne(box);
-                      delete box;
-                      box = 0;
+                    boxes.removeOne(box);
+                    delete box;
+                    box = 0;
                 }
             }
-        }   
+        }
     }
 }
 void PlasmaFileBoxes::removeBox(QString id)
 {
-    foreach(FileBox *box, boxes) {
+    foreach(FileBox * box, boxes) {
         if(box && box->boxID() == id) {
             boxes.removeOne(box);
             delete box;
             box = 0;
         }
-    }  
+    }
 }
 
 
 void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
 {
-    qDebug() << "new Box";
     FileBox *box =  new FileBox(m_layout, boxID, name, icon, m_backend, m_showName);
     box->setContentsMargins(0, 0, 0, 0);
     connect(box->m_fileBoxIcon, SIGNAL(newBoxDialog()), this, SLOT(newBoxDialog()));
@@ -166,21 +168,20 @@ void PlasmaFileBoxes::newBox(QString boxID, QString name, QString icon)
 
 void PlasmaFileBoxes::newBoxDialog()
 {
-    qDebug() << "newBoxDialog";
     bool ok;
     QString boxName;
     QString name = i18n("Box");
-    if (m_backend->boxIDs().contains(name)) {
-        for (int i = 1;; i++) {
+    if(m_backend->boxIDs().contains(name)) {
+        for(int i = 1;; i++) {
             QString n(name + " (" + QString::number(i) + ")");
-            if (!m_backend->boxIDs().contains(n)) {
+            if(!m_backend->boxIDs().contains(n)) {
                 name = n;
                 break;
             }
         }
     }
     QString text = KInputDialog::getText(i18n("Box Name"), i18n("Box Name:"), name, &ok);
-    if (ok && !text.isEmpty()) {
+    if(ok && !text.isEmpty()) {
         boxName = text;
     } else {
         QString bID = i18n("Box");
@@ -209,26 +210,25 @@ void PlasmaFileBoxes::createConfigurationInterface(KConfigDialog *parent)
 }
 void PlasmaFileBoxes::configAccepted()
 {
-    qDebug() << "config Accepted";
     bool changed = false;
     bool reload = false;
     KConfigGroup cg = config();
-    if (m_showName != configUi.checkBox_showName->isChecked()) {
+    if(m_showName != configUi.checkBox_showName->isChecked()) {
         m_showName = configUi.checkBox_showName->isChecked();
         cg.writeEntry("showName", m_showName);
         reload = true;
 
     }
-    if (m_layoutOrientation != configUi.comboBox_layout->currentIndex()) {
+    if(m_layoutOrientation != configUi.comboBox_layout->currentIndex()) {
         m_layoutOrientation = configUi.comboBox_layout->currentIndex();
         cg.writeEntry("layout", m_layoutOrientation);
         changed = true;
     }
-    if (reload == true) {
+    if(reload == true) {
         reloadBoxes();
         emit configNeedsSaving();
-    } else if (changed == true) {
-        if (m_layoutOrientation == 0)
+    } else if(changed == true) {
+        if(m_layoutOrientation == 0)
             m_layout->setOrientation(Qt::Vertical);
         else
             m_layout->setOrientation(Qt::Horizontal);
@@ -236,8 +236,5 @@ void PlasmaFileBoxes::configAccepted()
     }
 
 }
-
-
-
 
 #include "plasmafileboxes.moc"

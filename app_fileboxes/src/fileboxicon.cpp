@@ -30,7 +30,7 @@
 #include <QtGui/QPainter>
 
 FileBoxIcon::FileBoxIcon(QWidget *parent, const QString &boxID, const QString &name, const QString &icon, BoxesBackend* backenD)
-        : QToolButton(parent)
+    : QToolButton(parent)
 {
     setAcceptDrops(true);
     setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -70,7 +70,7 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName)
     p.setRenderHint(QPainter::Antialiasing, true);
 
 
-    QRect circle(pm.width() - circleWidth*1.5, pm.height() - circleHeight*1.5, circleWidth, circleHeight);
+    QRect circle(pm.width() - circleWidth * 1.5, pm.height() - circleHeight * 1.5, circleWidth, circleHeight);
     QRect shadowCircle(circle);
     shadowCircle.setX(shadowCircle.x() + 2);
     shadowCircle.setY(shadowCircle.y() + 2);
@@ -81,7 +81,7 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName)
 
     //draw circle
     QPen circlePen;
-    if (backend->hasNew(boxID)) {
+    if(backend->hasNew(boxID)) {
         circlePen.setColor(areNew);
         p.setBrush(areNew);
     } else {
@@ -106,18 +106,18 @@ void FileBoxIcon::setFileBoxName(const QString &name)
 }
 void FileBoxIcon::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasUrls()) {
+    if(event->mimeData()->hasUrls()) {
         event->acceptProposedAction();
     }
 }
 void FileBoxIcon::dropEvent(QDropEvent *event)
 {
-    if (event->mimeData()->hasUrls()) {
+    if(event->mimeData()->hasUrls()) {
         QList<QString> files;
-        for (int i = 0; i < event->mimeData()->urls().size(); ++i) {
+        for(int i = 0; i < event->mimeData()->urls().size(); ++i) {
             files << event->mimeData()->urls().at(i).toLocalFile();
         }
-        if (files.size() > 0) {
+        if(files.size() > 0) {
             m_box->addFiles(files);
             m_box->setHasNew(true);
             updateIcon();
@@ -129,17 +129,17 @@ void FileBoxIcon::dropEvent(QDropEvent *event)
 
 void FileBoxIcon::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton) {
+    if(event->button() == Qt::LeftButton) {
         dragStartPosition = event->pos();
     }
 }
 
 void FileBoxIcon::mouseMoveEvent(QMouseEvent *event)
 {
-    if (!(event->buttons() & Qt::LeftButton)) {
+    if(!(event->buttons() & Qt::LeftButton)) {
         return;
     }
-    if ((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance()) {
+    if((event->pos() - dragStartPosition).manhattanLength() < QApplication::startDragDistance()) {
         return;
     }
 

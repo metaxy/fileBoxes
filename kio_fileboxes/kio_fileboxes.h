@@ -34,9 +34,9 @@ public:
     void mimetype(const KUrl& url);
     void put(const KUrl& url, int permissions, KIO::JobFlags flags);
     void symlink(const QString &target, const KUrl &dest,
-                         KIO::JobFlags flags);
+                 KIO::JobFlags flags);
     void copy(const KUrl &src, const KUrl &dest,
-                      int permissions, KIO::JobFlags flags);
+              int permissions, KIO::JobFlags flags);
 
 protected:
 

@@ -28,7 +28,7 @@
 #include <QtCore/QStringList>
 #include <QtGui/QInputDialog>
 FileBoxesWidget::FileBoxesWidget(QWidget *parent)
-        : QWidget(parent)
+    : QWidget(parent)
 {
     qDebug() << "fileBoxesWidget::fileBoxesWidget";
     setAcceptDrops(true);
@@ -43,10 +43,10 @@ FileBoxesWidget::FileBoxesWidget(QWidget *parent)
 
     mainWidget->setObjectName("fileBoxesWidget_mainWidget");
     QStringList boxIDs = backend->boxIDs();
-    for (int i = 0; i < boxIDs.size(); ++i) {
+    for(int i = 0; i < boxIDs.size(); ++i) {
         newBox(boxIDs.at(i), backend->name(boxIDs.at(i)), backend->icon(boxIDs.at(i)));
     }
-    if (boxIDs.size() == 0) {
+    if(boxIDs.size() == 0) {
         QString newBoxID = backend->newBox(i18n("Default"), "filebox");
         newBox(newBoxID, i18n("Default"), "filebox");
     }
@@ -70,7 +70,7 @@ void FileBoxesWidget::newBox(const QString &boxID, const QString &name, const QS
 }
 void FileBoxesWidget::removeBox(const QString &boxID)
 {
-    if (this->findChild<FileBoxWidget*>("boxWidget_" + boxID))
+    if(this->findChild<FileBoxWidget*>("boxWidget_" + boxID))
         delete this->findChild<FileBoxWidget*>("boxWidget_" + boxID);
 }
 void FileBoxesWidget::newBoxDialog()
@@ -79,7 +79,7 @@ void FileBoxesWidget::newBoxDialog()
     QString boxName;
 
     QString text = QInputDialog::getText(this, i18n("Box Name"), i18n("Box Name:"), QLineEdit::Normal, i18n("Box"), &ok);
-    if (ok && !text.isEmpty()) {
+    if(ok && !text.isEmpty()) {
         boxName = text;
     } else {
         boxName = i18n("Box");

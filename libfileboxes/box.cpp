@@ -26,14 +26,15 @@
 Box::Box(const QString &boxID, const QString & name, const QString & icon)
 {
     m_boxID = boxID;
-    if (m_boxID.isEmpty()) {
+    if(m_boxID.isEmpty()) {
         //create new box
         m_boxID = m_backend.newBox(name, icon);
     }
 }
 bool Box::addFiles(const QStringList &files)
 {
-    for (int i = 0; i < files.size(); ++i) {
+    qDebug() << Q_FUNC_INFO << files;
+    for(int i = 0; i < files.size(); ++i) {
         m_backend.newFile(files.at(i), m_boxID);
     }
     org::kde::KDirNotify::emitFilesAdded("fileboxes:/" + m_boxID + "/");
@@ -82,6 +83,7 @@ bool Box::removeBox()
 QList<QUrl> Box::getFiles()
 {
     QList<QUrl> urls;
+    qDebug() << Q_FUNC_INFO << urls;
     foreach(QUrl url, m_backend.files(m_boxID)) {
         urls << m_backend.localPath(url);
     }

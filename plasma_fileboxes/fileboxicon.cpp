@@ -18,9 +18,10 @@
 #include <Plasma/ToolTipManager>
 #include <plasma/widgets/iconwidget.h>
 
-FileBoxIcon::FileBoxIcon(QGraphicsItem* parent, const QString& boxID, const QString& name, const QString& icon) : Plasma::IconWidget(parent)
+FileBoxIcon::FileBoxIcon(QGraphicsItem* parent, const QString& boxID, const QString& name, const QString& icon)
+    : Plasma::IconWidget(parent)
 {
-   // this->nativeWidget()->setAcceptDrops(true);
+    // this->nativeWidget()->setAcceptDrops(true);
     setAcceptDrops(true);
     setAcceptHoverEvents(true);
     setAcceptsHoverEvents(true);
@@ -31,7 +32,7 @@ FileBoxIcon::FileBoxIcon(QGraphicsItem* parent, const QString& boxID, const QStr
     m_name = name;
     setFileBoxIcon(m_icon, true);
     connect(this, SIGNAL(clicked()), this, SLOT(openBoxInNewTab()));
-    
+
 
 
 }
@@ -41,21 +42,21 @@ void FileBoxIcon::updateIcon(bool reloadSize)
 }
 void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
 {
-    if (reloadSize) {
+    if(reloadSize) {
         m_size = m_box->size();
-        
+
         QString items = i18n("%1 items", QString::number(m_size));
-        Plasma::ToolTipContent d(m_name,items,KIcon(m_icon));
+        Plasma::ToolTipContent d(m_name, items, KIcon(m_icon));
         Plasma::ToolTipManager::self()->setContent(this, d);
     }
-    
-    
-     
+
+
+
     QColor noNew(69, 147, 219, 255);//blue
     QColor areNew(102, 219, 67, 255);//green
     qreal size = qMin(this->size().width() , this->size().height()) - 1;
     qreal sizeX = size, sizeY = size;
-   // this->nativeWidget()->setIconSize(QSize(sizeX, sizeY));
+    // this->nativeWidget()->setIconSize(QSize(sizeX, sizeY));
     qreal circleWidth = 14, circleHeight = 14;
 
     QIcon icon = KIcon(iconName);
@@ -64,7 +65,7 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
     p.setRenderHint(QPainter::Antialiasing, true);
 
 
-    QRect circle(pm.width() - circleWidth*1.5, pm.height() - circleHeight*1.5, circleWidth, circleHeight);
+    QRect circle(pm.width() - circleWidth * 1.5, pm.height() - circleHeight * 1.5, circleWidth, circleHeight);
     QRect shadowCircle(circle);
     shadowCircle.setX(shadowCircle.x() + 2);
     shadowCircle.setY(shadowCircle.y() + 2);
@@ -75,7 +76,7 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
 
     //draw circle
     QPen circlePen;
-    if (m_box->hasNew()) {
+    if(m_box->hasNew() && m_size != 0) {
         circlePen.setColor(areNew);
         p.setBrush(areNew);
     } else {
@@ -88,7 +89,7 @@ void FileBoxIcon::setFileBoxIcon(const QString &iconName, bool reloadSize)
     QPen textPen(Qt::black, 1);
     p.setPen(textPen);
     p.setBrush(Qt::NoBrush);
-    
+
     p.drawText(circle, Qt::AlignCenter, QString::number(m_size));
 
     setIcon(pm);
@@ -100,8 +101,7 @@ void FileBoxIcon::resizeEvent(QGraphicsSceneResizeEvent* event)
 }
 void FileBoxIcon::dragEnterEvent(QGraphicsSceneDragDropEvent* event)
 {
-    qDebug() << Q_FUNC_INFO << acceptDrops();
-    if (event->mimeData()->hasUrls()) {
+    if(event->mimeData()->hasUrls()) {
         event->accept();
         //event->acceptProposedAction();
     }
@@ -113,13 +113,13 @@ void FileBoxIcon::dragMoveEvent(QGraphicsSceneDragDropEvent* event)
 
 void FileBoxIcon::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
-    qDebug() << Q_FUNC_INFO;
-    if (event->mimeData()->hasUrls()) {
+    if(event->mimeData()->hasUrls()) {
         QList<QString> files;
-        for (int i = 0; i < event->mimeData()->urls().size(); ++i) {
-            files << event->mimeData()->urls().at(i).toLocalFile();
+        for(int i = 0; i < event->mimeData()->urls().size(); ++i) {
+            qDebug() << event->mimeData()->urls().at(i) << event->mimeData()->urls().at(i).toString();
+            files << event->mimeData()->urls().at(i).toString();
         }
-        if (files.size() > 0) {
+        if(files.size() > 0) {
             m_box->addFiles(files);
             m_box->setHasNew(true);
             updateIcon(true);
@@ -130,8 +130,7 @@ void FileBoxIcon::dropEvent(QGraphicsSceneDragDropEvent *event)
 
 void FileBoxIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
-    qDebug() << Q_FUNC_INFO;
-    if (event->button() == Qt::LeftButton) {
+    if(event->button() == Qt::LeftButton) {
         dragStartPosition = event->pos();
     }
     Plasma::IconWidget::mousePressEvent(event);
@@ -139,8 +138,7 @@ void FileBoxIcon::mousePressEvent(QGraphicsSceneMouseEvent* event)
 
 void FileBoxIcon::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    qDebug() << Q_FUNC_INFO;
-    if (!(event->buttons() & Qt::LeftButton)) {
+    if(!(event->buttons() & Qt::LeftButton)) {
         return;
     }
     QWidget *w = new QWidget;
@@ -155,9 +153,8 @@ void FileBoxIcon::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 }
 void FileBoxIcon::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
-    qDebug() << "contextMenu";
-    QMenu *menu = new QMenu;
 
+    QMenu *menu = new QMenu;
 
     QAction *actionOpenBoxInNewTab = new QAction(KIcon("system-file-manager"), i18n("Open in Tab"), this);
     connect(actionOpenBoxInNewTab, SIGNAL(triggered(bool)), this, SLOT(openBoxInNewTab()));
@@ -177,7 +174,6 @@ void FileBoxIcon::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     QAction *actionRemove = new QAction(KIcon("list-remove"), i18n("Remove"), this);
     connect(actionRemove, SIGNAL(triggered(bool)), this, SLOT(removeBox()));
 
-
     menu->addAction(actionOpenBoxInNewTab);
     menu->addAction(actionOpenBoxInNewWindow);
     menu->addAction(actionCreateArchive);
@@ -186,13 +182,11 @@ void FileBoxIcon::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     menu->addAction(actionCleanUp);
     menu->addAction(actionRemove);
 
-
     menu->show();
     menu->exec(QCursor::pos());
 }
 void FileBoxIcon::newBox()
 {
-    qDebug() << "emit";
     emit newBoxDialog();
 }
 void FileBoxIcon::openBoxInNewWindow()
@@ -205,13 +199,12 @@ void FileBoxIcon::openBoxInNewWindow()
 }
 void FileBoxIcon::openBoxInNewTab()
 {
-    qDebug() << "new tab";
     QDBusMessage listOfD = QDBusMessage::createMethodCall("org.kde.dolphin",
                            "/dolphin",
                            "org.freedesktop.DBus.Introspectable",
                            "Introspect");
     QDBusMessage listOfDRes = QDBusConnection::sessionBus().call(listOfD);
-    if (listOfDRes.arguments().size() == 0) {
+    if(listOfDRes.arguments().size() == 0) {
         openBoxInNewWindow();
         return;
     }
@@ -219,14 +212,14 @@ void FileBoxIcon::openBoxInNewTab()
     QString search = "Dolphin_";
     int next = xml.indexOf(search);
     QStringList items;
-    while (true) {
+    while(true) {
         QString backup = xml;
         backup.remove(0, next + search.size());
         backup.remove(backup.indexOf("\""), backup.size());
         items << backup;
         xml.remove(search + backup);
         next = xml.indexOf(search);
-        if (next == -1)
+        if(next == -1)
             break;
     }
     QString rID;
@@ -238,11 +231,11 @@ void FileBoxIcon::openBoxInNewTab()
                          "org.kde.KMainWindow",
                          "winId");
         QDBusMessage b = QDBusConnection::sessionBus().call(a);
-        if (b.arguments().size() == 0 || b.arguments().at(0).toString() == "")
+        if(b.arguments().size() == 0 || b.arguments().at(0).toString() == "")
             continue;
         QString id = b.arguments().at(0).toString();
         TaskManager::Task *task = new TaskManager::Task((WId)id.toLong(), this->parentObject(), "");
-        if (task->isOnCurrentDesktop()) {
+        if(task->isOnCurrentDesktop()) {
             windows << item;
             map[item] = task;
         }
@@ -250,42 +243,42 @@ void FileBoxIcon::openBoxInNewTab()
 
     foreach(QString id, windows) {
         TaskManager::Task *task = map.value(id);
-        if (task->isActive()) {
+        if(task->isActive()) {
             rID = id;
             break;
         }
     }
-    if (rID.isEmpty()) {
+    if(rID.isEmpty()) {
         foreach(QString id, windows) {
             TaskManager::Task *task = map.value(id);
-            if (task->isAlwaysOnTop()) {
+            if(task->isAlwaysOnTop()) {
                 rID = id;
                 break;
             }
 
         }
     }
-    if (rID.isEmpty()) {
+    if(rID.isEmpty()) {
         foreach(QString id, windows) {
             TaskManager::Task *task = map.value(id);
-            if (task->isOnTop()) {
+            if(task->isOnTop()) {
                 rID = id;
                 break;
             }
 
         }
     }
-    if (rID.isEmpty()) {
+    if(rID.isEmpty()) {
         foreach(QString id, windows) {
             TaskManager::Task *task = map.value(id);
-            if (!task->isMinimized()) {
+            if(!task->isMinimized()) {
                 rID = id;
                 break;
             }
         }
 
     }
-    if (rID.isEmpty()) {
+    if(rID.isEmpty()) {
         foreach(QString id, windows) {
             TaskManager::Task *task = map.value(id);
             rID = id;
@@ -293,7 +286,7 @@ void FileBoxIcon::openBoxInNewTab()
         }
 
     }
-    if (rID.isEmpty()) {
+    if(rID.isEmpty()) {
         openBoxInNewWindow();
     } else {
         TaskManager::Task *task = map.value(rID);

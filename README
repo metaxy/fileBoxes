@@ -1,5 +1,5 @@
-fileboxes - a new way of managing files
-
+FileBoxes - a new way of managing files
+see also : http://bugs.kde.org/show_bug.cgi?id=200461 and http://www.youtube.com/watch?v=wLAgN8Ho3_4
 how to install:
 
 first install libfileboxes:
@@ -10,6 +10,7 @@ first install libfileboxes:
     cmake -DCMAKE_INSTALL_PREFIX=`kde4-config --prefix` ..
     make
     make install
+
 and than the other stuff:
     cd [your_path_to_source]
     mkdir build

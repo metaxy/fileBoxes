@@ -16,19 +16,23 @@ FileBox::FileBox(QGraphicsLinearLayout* parent, const QString boxID, const QStri
     m_layout = new QGraphicsLinearLayout(this);
     m_layout->setContentsMargins(0, 0, 0, 0);
     m_layout->setSpacing(0);
-    if (parent->orientation() == Qt::Vertical)
+    /*if(parent && parent->orientation()) {
+        if(parent->orientation() == Qt::Vertical)
+            m_layout->setOrientation(Qt::Horizontal);
+        else
+            m_layout->setOrientation(Qt::Vertical);
+    } else {
         m_layout->setOrientation(Qt::Horizontal);
-    else
-        m_layout->setOrientation(Qt::Vertical);
+    }*/
 
     m_layout->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
     //_______________________________________
-    m_fileBoxIcon = new FileBoxIcon(this,boxID, name, icon);
+    m_fileBoxIcon = new FileBoxIcon(this, boxID, name, icon);
     connect(m_fileBoxIcon, SIGNAL(removeB()), this, SLOT(removeBox()));
     m_fileBoxIcon->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred));
     m_layout->addItem(m_fileBoxIcon);
     m_layout->setAlignment(m_fileBoxIcon, Qt::AlignLeft);
-    if (showName) {
+    if(showName) {
         qDebug() << "show Name true";
         Plasma::Label *label = new Plasma::Label();
         label->setText(m_name);

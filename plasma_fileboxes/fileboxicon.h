@@ -10,7 +10,7 @@ class FileBoxIcon : public Plasma::IconWidget
 {
     Q_OBJECT
 public:
-    FileBoxIcon(QGraphicsItem *parent,const QString& boxID, const QString& name, const QString& icon);
+    FileBoxIcon(QGraphicsItem *parent, const QString& boxID, const QString& name, const QString& icon);
     void resizeEvent(QGraphicsSceneResizeEvent *event);
     void updateIcon(bool reloadSize = false);
 protected:
@@ -41,7 +41,7 @@ private:
     QPointF dragStartPosition;
     unsigned int m_size;
     QString m_name;
-   
+
 };
 
 #endif // FILEBOXICON_H
