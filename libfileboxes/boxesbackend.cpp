@@ -49,7 +49,6 @@ bool BoxesBackend::newFile(const QString& fileName, const QString& boxID)
     qDebug() << Q_FUNC_INFO <<  fileName;
     Resource f(fileName);
     f.addProperty(Nepomuk::Vocabulary::NIE::isPartOf(), boxRes(boxID));
-    qDebug() << f.exists() << f.uri();
     return true;
 }
 QString BoxesBackend::newBox(const QString &name, const QString &icon)
@@ -94,10 +93,11 @@ bool BoxesBackend::removeFile(const QString &fileName, const QString &boxID)
 }
 bool BoxesBackend::removeFiles(const QStringList &files, const QString &boxID)
 {
-    for(int i = 0; i < files.size(); ++i) {
-        removeFile(files.at(i), boxID);
+    bool ok = true;
+    foreach(QString file,files) {
+        ok &= removeFile(file,boxID);
     }
-    return true;
+    return ok;
 }
 bool BoxesBackend::removeAllFiles(const QString &boxID)
 {
@@ -116,14 +116,19 @@ bool BoxesBackend::removeAllFiles(const QString &boxID)
 }
 QList<QUrl> BoxesBackend::files(const QString &boxID)
 {
-    Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
+    /*Nepomuk::Query::ResourceTerm partTerm(boxRes(boxID));
     Nepomuk::Query::ComparisonTerm term(Nepomuk::Vocabulary::NIE::isPartOf(),
                                         partTerm,
                                         Nepomuk::Query::ComparisonTerm::Equal);
     Nepomuk::Query::Query query(term);
     QString q = query.toSparqlQuery();
-    qDebug() << q;
-    Soprano::QueryResultIterator it = m_model->executeQuery(q, Soprano::Query::QueryLanguageSparql);
+    qDebug() << q;*/
+    QString query
+       = QString("select distinct ?r where { ?r %1 %2 . }")
+       .arg( Soprano::Node::resourceToN3(Nepomuk::Vocabulary::NIE::isPartOf()) )
+       .arg( Soprano::Node::resourceToN3(boxRes(boxID).resourceUri()) );
+    qDebug() << query;        
+    Soprano::QueryResultIterator it = m_model->executeQuery(query, Soprano::Query::QueryLanguageSparql);
     QList<QUrl> urls;
     while(it.next()) {
         qDebug() << it.bindingNames() << it.bindingCount() << it.isBinding() << it.isGraph() << it.isValid();

@@ -43,6 +43,8 @@
 #include <KLocale>
 #include <KIO/Job>
 #include <KIO/NetAccess>
+#include "nie.h"
+#include <Nepomuk/Variant>
 
 #include <QCoreApplication>
 FileBoxesProtocol::FileBoxesProtocol(const QByteArray& protocol, const QByteArray &pool, const QByteArray &app)
@@ -80,60 +82,70 @@ KIO::UDSEntry FileBoxesProtocol::createBox(const QString& boxID)
 KIO::UDSEntry FileBoxesProtocol::createLink(QUrl url)
 {
     KIO::UDSEntry uds;
-    if(KIO::StatJob* job = KIO::stat(url, KIO::HideProgressInfo)) {
-        job->setAutoDelete(false);
-        if(KIO::NetAccess::synchronousRun(job, 0)) {
-            uds = job->statResult();
-        }
-        delete job;
-    }
     QUrl localUrl = m_backend->localUrl(url);
     QString localPath = localUrl.toLocalFile();
-    KUrl fileUrl(localUrl);
-    if(uds.isDir()) {
-        uds.insert(KIO::UDSEntry::UDS_URL, fileUrl.url());
+    
+    if(localUrl.scheme() != "file") {
+        QString uri = localUrl.toString();
+        uds.insert(KIO::UDSEntry::UDS_URL, uri);
+        uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString());
+        KUrl u(url);
+        uds.insert(KIO::UDSEntry::UDS_NAME,  QString::fromAscii(u.toEncoded().toPercentEncoding(QByteArray(), QByteArray(""), '_')));
+        Nepomuk::Resource f(url);
+        
+        QString title = /*f.property(Nepomuk::Vocabulary::NIE::title()).toString()*/ f.label();
+        if(!title.isEmpty())
+            uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME,title);
+        else
+            uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME,uri);
+        
+        QString mimetype = f.property(Nepomuk::Vocabulary::NIE::mimeType()).toString();
+        if(!mimetype.isEmpty())
+            uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, mimetype);
+        qDebug() << f.isValid() << title << mimetype;
+        /*else*/ //something like an external ressource
+        
+        uds.insert(KIO::UDSEntry::UDS_TARGET_URL, uri);
+        uds.insert(KIO::UDSEntry::UDS_LINK_DEST, uri);
+        
     }
-//
-    if(fileUrl.isLocalFile()) {
-        uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, fileUrl.toLocalFile());
-    }
-    uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString());
-    KUrl u(url);
-    uds.insert(KIO::UDSEntry::UDS_NAME,  QString::fromAscii(u.toEncoded().toPercentEncoding(QByteArray(), QByteArray(""), '_')));
+    else {
+        if(KIO::StatJob* job = KIO::stat(url, KIO::HideProgressInfo)) {
+            job->setAutoDelete(false);
+            if(KIO::NetAccess::synchronousRun(job, 0)) {
+                uds = job->statResult();
+            }
+            delete job;
+        }
+       
+        
+        KUrl fileUrl(localUrl);
+        if(uds.isDir()) {
+            uds.insert(KIO::UDSEntry::UDS_URL, fileUrl.url());
+        }
+    //
+        if(fileUrl.isLocalFile()) {
+            uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, fileUrl.toLocalFile());
+        }
+        
+        uds.insert(KIO::UDSEntry::UDS_NEPOMUK_URI, url.toString());
+        KUrl u(url);
+        uds.insert(KIO::UDSEntry::UDS_NAME,  QString::fromAscii(u.toEncoded().toPercentEncoding(QByteArray(), QByteArray(""), '_')));
 
 
-    KFileItem item(KFileItem::Unknown, KFileItem::Unknown, KUrl(localPath), false);
-    /* QString ort = localPath;
-     if (ort.startsWith(QDir::homePath())) {
-         ort.remove(0,QDir::homePath().size()+1);
-     }
+        KFileItem item(KFileItem::Unknown, KFileItem::Unknown, KUrl(localPath), false);
+        uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
+        QString mimetype = uds.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
+        if(mimetype.isEmpty()) {
+            mimetype = KMimeType::findByUrl(fileUrl)->name();
+            uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, mimetype);
+        }
 
-     if (localPath == QDir::homePath()+"/"+item.name()) {
-         ort = QDir::homePath();
-     }
-
-     if (ort.endsWith(item.name())) {
-         ort.remove(ort.size()-item.name().size()-1,item.name().size()+1);
-     }
-
-     if (ort == "" || ort == "/") {
-         uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
-     }
-     else {
-         uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name()+"\n"+ort);
-     }
-    */
-    uds.insert(KIO::UDSEntry::UDS_DISPLAY_NAME, item.name());
-    QString mimetype = uds.stringValue(KIO::UDSEntry::UDS_MIME_TYPE);
-    if(mimetype.isEmpty()) {
-        mimetype = KMimeType::findByUrl(fileUrl)->name();
-        uds.insert(KIO::UDSEntry::UDS_MIME_TYPE, mimetype);
-    }
-
-    if(item.isFile()) {
-        uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
-        uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
-        uds.insert(KIO::UDSEntry::UDS_LINK_DEST, localPath);
+        if(item.isFile()) {
+            uds.insert(KIO::UDSEntry::UDS_LOCAL_PATH, localPath);
+            uds.insert(KIO::UDSEntry::UDS_TARGET_URL, localPath);
+            uds.insert(KIO::UDSEntry::UDS_LINK_DEST, localPath);
+        }
     }
     return uds;
 }
