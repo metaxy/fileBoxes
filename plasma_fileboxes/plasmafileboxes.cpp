@@ -37,7 +37,10 @@ PlasmaFileBoxes::PlasmaFileBoxes(QObject *parent, const QVariantList &args)
 
 PlasmaFileBoxes::~PlasmaFileBoxes()
 {
-    delete m_backend;
+    /*if(m_backend) {
+        delete m_backend;
+        m_backend = 0;
+    } */
 }
 
 void PlasmaFileBoxes::init()
@@ -48,7 +51,7 @@ void PlasmaFileBoxes::init()
         m_layoutOrientation = cg.readEntry("layout", 1); // 0 = Vertical, 1 = Horizontal
         m_showName = cg.readEntry("showName", false);
     } else {
-        m_layoutOrientation = cg.readEntry("layout", 0); // 0 = Vertical, 1 = Horizontal
+        m_layoutOrientation = cg.readEntry("layout", 0);
         m_showName = cg.readEntry("showName", true);
     }
 
@@ -66,7 +69,7 @@ void PlasmaFileBoxes::load()
     m_backend = new BoxesBackend();
     if(m_backend->m_loaded == -1) {
         setBusy(true);
-        QTimer::singleShot(30 * 1000, this, SLOT(load())); //retry every 10 sec
+        QTimer::singleShot(30 * 1000, this, SLOT(load())); //retry every 30 sec
         return;
     } else {
         loadBoxes();
@@ -123,14 +126,9 @@ void PlasmaFileBoxes::slotFilesAdded(QString d)
 }
 void PlasmaFileBoxes::slotFilesRemoved(QStringList fileList)
 {
-    qDebug() << fileList;
     foreach(QString a, fileList) {
         if(a.startsWith("fileboxes:/")) {
             QString id = a.remove("fileboxes:/");
-            qDebug() << "slotFilesRemoved" << id;
-            /* if(id.startsWith("/")) {
-                 id.remove(0,1);
-            //             }*/
             foreach(FileBox * box, boxes) {
                 if(box && box->boxID() == id) {
                     boxes.removeOne(box);
